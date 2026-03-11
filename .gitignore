@@ -1,0 +1,46 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# macOS files
+.DS_Store
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Streamlit cache
+.streamlit/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Large data files (optional)
+*.csv
+*.parquet
+
+# OS generated files
+Thumbs.db
