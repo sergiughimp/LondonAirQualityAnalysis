@@ -82,3 +82,7 @@ Contains:
   - site type
 - Add monitoring station count per borough to the Borough Summary table
 - Add a filterable stations table below the map, filtered to the current borough selection
+
+### 7. Filter stations table columns
+- Stations table now displays only station name and site type
+- Removed borough, station code, latitude, and longitude from the table view

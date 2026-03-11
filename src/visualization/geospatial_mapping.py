@@ -6,13 +6,6 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 
-# ─────────────────────────── PAGE CONFIG ───────────────────────────
-st.set_page_config(
-    page_title="London Borough Geospatial Mapping",
-    page_icon="🗺️",
-    layout="wide"
-)
-
 # ─────────────────────────── FILE PATHS ────────────────────────────
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -234,8 +227,6 @@ if show_stations and not stations_df.empty:
         except (ValueError, KeyError):
             continue
 
-        borough_colour = colour_map.get(row.get("borough", ""), "#444444")
-
         popup_html = f"""
             <b>{row.get('station_name', 'Unknown')}</b><br>
             Borough: {row.get('borough', 'N/A')}<br>
@@ -297,4 +288,8 @@ if show_stations and not stations_df.empty:
     )
     filtered_stations = stations_df[stations_df["borough"].isin(boroughs_to_filter)]
 
-    st.dataframe(filtered_stations.reset_index(drop=True), use_container_width=True)
+    display_cols = ["station_name", "site_type"]
+    display_stations = filtered_stations[display_cols].reset_index(drop=True)
+    display_stations.columns = ["Station Name", "Site Type"]
+
+    st.dataframe(display_stations, use_container_width=True)

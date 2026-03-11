@@ -10,6 +10,7 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Displays **borough centre markers**
 - Displays **air quality monitoring stations** as markers on the map
 - Toggle to show or hide monitoring stations
+- Stations table showing **station name** and **site type**
 - Interactive map controls through a **Streamlit sidebar**
 - Adjustable **zoom level**
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
