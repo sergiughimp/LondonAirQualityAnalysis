@@ -1,19 +1,3 @@
-"""
-🗺️ GEOSPATIAL MAPPING TOOL
-==========================
-This app:
-- draws borough boundaries from GeoJSON files
-- lets you view one borough or all together
-- shows borough centre markers
-- uses a cleaner Streamlit + Folium layout
-
-Required packages:
-    pip install streamlit folium streamlit-folium
-
-Run with:
-    streamlit run scripts/geospatial_mapping.py
-"""
-
 import json
 from pathlib import Path
 

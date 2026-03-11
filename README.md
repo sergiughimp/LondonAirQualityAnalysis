@@ -18,3 +18,7 @@ Clone the repository and install the required Python libraries:
 
 ```bash
 pip install -r requirements.txt
+
+```Run
+Run with:
+    streamlit run scripts/geospatial_mapping.py
