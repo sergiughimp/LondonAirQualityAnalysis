@@ -8,6 +8,8 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Visualizes borough boundaries using **GeoJSON data**
 - Supports viewing **a single borough or all boroughs together**
 - Displays **borough centre markers**
+- Displays **air quality monitoring stations** as markers on the map
+- Toggle to show or hide monitoring stations
 - Interactive map controls through a **Streamlit sidebar**
 - Adjustable **zoom level**
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
@@ -25,7 +27,7 @@ pip install -r requirements.txt
 Run the application with:
 
 ```bash
-streamlit run src/visualization/geospatial_mapping.py
+streamlit run src/visualisation/geospatial_mapping.py
 ```
 
 ## Data Collection

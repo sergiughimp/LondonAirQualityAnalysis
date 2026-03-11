@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
@@ -20,6 +21,8 @@ DATA_FILES = {
     "Camden": BASE_DIR / "data" / "geo" / "camden.json",
     "Greenwich": BASE_DIR / "data" / "geo" / "greenwich.json",
 }
+
+STATIONS_FILE = BASE_DIR / "data" / "processed" / "stations.csv"
 
 # ─────────────────────────── HELPERS ───────────────────────────────
 def load_json(filepath):
@@ -96,6 +99,16 @@ for borough, filepath in DATA_FILES.items():
     else:
         missing_files.append(str(filepath))
 
+# ─────────────────────────── LOAD STATIONS ─────────────────────────
+stations_df = pd.DataFrame()
+stations_missing = False
+
+if STATIONS_FILE.exists():
+    stations_df = pd.read_csv(STATIONS_FILE)
+    stations_df.columns = stations_df.columns.str.strip().str.lower().str.replace(" ", "_")
+else:
+    stations_missing = True
+
 # ─────────────────────────── TITLE ─────────────────────────────────
 st.title("🗺️ Geospatial Mapping Tool")
 st.write(
@@ -105,6 +118,9 @@ st.write(
 
 if missing_files:
     st.error("These borough files were not found: " + ", ".join(missing_files))
+
+if stations_missing:
+    st.warning("Stations file not found: " + str(STATIONS_FILE))
 
 if not borough_geojson:
     st.stop()
@@ -135,6 +151,11 @@ show_fill = st.sidebar.checkbox("Fill polygons", value=True)
 show_center_marker = st.sidebar.checkbox("Show borough centre marker", value=True)
 show_labels = st.sidebar.checkbox("Show borough labels", value=True)
 zoom_start = st.sidebar.slider("Zoom level", 9, 15, 11)
+
+st.sidebar.divider()
+st.sidebar.header("📍 Stations")
+
+show_stations = st.sidebar.checkbox("Show monitoring stations", value=True)
 
 # ─────────────────────────── MAP SETUP ─────────────────────────────
 if selected_borough:
@@ -194,6 +215,47 @@ for borough in boroughs_to_draw:
             ),
         ).add_to(m)
 
+# ─────────────────────────── DRAW STATIONS ─────────────────────────
+if show_stations and not stations_df.empty:
+    boroughs_to_filter = (
+        [selected_borough] if selected_borough else list(borough_geojson.keys())
+    )
+
+    filtered_stations = stations_df[
+        stations_df["borough"].isin(boroughs_to_filter)
+    ]
+
+    station_layer = folium.FeatureGroup(name="Monitoring Stations")
+
+    for _, row in filtered_stations.iterrows():
+        try:
+            lat = float(row["latitude"])
+            lon = float(row["longitude"])
+        except (ValueError, KeyError):
+            continue
+
+        borough_colour = colour_map.get(row.get("borough", ""), "#444444")
+
+        popup_html = f"""
+            <b>{row.get('station_name', 'Unknown')}</b><br>
+            Borough: {row.get('borough', 'N/A')}<br>
+            Code: {row.get('station_code', 'N/A')}<br>
+            Site type: {row.get('site_type', 'N/A')}
+        """
+
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=2,
+            color="#800080",
+            fill=True,
+            fill_color="#800080",
+            fill_opacity=0.5,
+            tooltip=row.get("station_name", "Station"),
+            popup=folium.Popup(popup_html, max_width=220),
+        ).add_to(station_layer)
+
+    station_layer.add_to(m)
+
 folium.LayerControl().add_to(m)
 
 # ─────────────────────────── RENDER MAP ────────────────────────────
@@ -210,11 +272,29 @@ summary_rows = []
 for borough in boroughs_to_draw:
     coords = borough_coords[borough]
     center = get_center_from_coords(coords)
+    station_count = (
+        len(stations_df[stations_df["borough"] == borough])
+        if not stations_df.empty
+        else "N/A"
+    )
     summary_rows.append({
         "Borough": borough,
         "Boundary Points": len(coords),
+        "Monitoring Stations": station_count,
         "Centre Latitude": round(center[0], 6),
         "Centre Longitude": round(center[1], 6),
     })
 
 st.dataframe(summary_rows, use_container_width=True)
+
+# ─────────────────────────── STATIONS TABLE ────────────────────────
+if show_stations and not stations_df.empty:
+    st.divider()
+    st.subheader("📍 Monitoring Stations")
+
+    boroughs_to_filter = (
+        [selected_borough] if selected_borough else list(borough_geojson.keys())
+    )
+    filtered_stations = stations_df[stations_df["borough"].isin(boroughs_to_filter)]
+
+    st.dataframe(filtered_stations.reset_index(drop=True), use_container_width=True)

@@ -16,6 +16,7 @@
 - Set OpenStreetMap as the default map style
 
 ---
+
 ## Data Collection and Processing Pipeline
 
 ### 3. Implement air quality data collection
@@ -28,7 +29,7 @@
   - Tower Hamlets
 - Store the raw dataset in:
 
-  data/raw/air_quality_3_day.json
+  data/raw/air_quality_3_days.json
 
 ### 4. Implement data processing
 - Created `process_air_quality_data.py` to transform raw JSON data into structured datasets
@@ -64,3 +65,20 @@ Contains:
 - pollutant name
 - measurement date
 - measurement value
+
+---
+
+## Monitoring Stations Map Layer
+
+### 6. Add monitoring stations to the interactive map
+- Load monitoring station data from `data/processed/stations.csv`
+- Render stations as small circle markers on the interactive map
+- Markers are small and semi-transparent to avoid obscuring borough boundaries
+- Add sidebar toggle to show or hide monitoring stations
+- Stations are added to a dedicated layer group visible in the map layer control
+- Each station marker displays a tooltip with the station name and a popup with:
+  - borough
+  - station code
+  - site type
+- Add monitoring station count per borough to the Borough Summary table
+- Add a filterable stations table below the map, filtered to the current borough selection
