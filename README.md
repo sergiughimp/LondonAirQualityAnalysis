@@ -51,7 +51,7 @@ The script:
 The raw dataset is stored in:
 
 ```bash
-data/raw/air_quality_3_day.json
+data/raw/air_quality_3_days.json
 ```
 
 ## Data Processing
@@ -106,7 +106,7 @@ LondonAir API
       ↓
 fetch_air_quality_data.py
       ↓
-data/raw/air_quality_3_day.json
+data/raw/air_quality_3_days.json
       ↓
 process_air_quality_data.py
       ↓
@@ -129,7 +129,7 @@ london-air-quality-analysis/
 │
 ├── data/
 │   ├── raw/
-│   │   └── air_quality_3_day.json
+│   │   └── air_quality_3_days.json
 │   │
 │   ├── processed/
 │   │   ├── stations.csv
