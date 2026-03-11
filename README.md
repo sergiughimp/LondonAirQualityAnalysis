@@ -173,3 +173,24 @@ The dataset contains monitoring station measurements for:
 - Camden
 - Greenwich
 - Tower Hamlets
+
+## Borough Boundary Data
+
+The polygon boundary data used to visualise the London boroughs in this project was obtained from **MapIt by mySociety**, a service that provides geographic boundary data for UK administrative areas.
+
+Source:
+
+```bash
+https://mapit.mysociety.org/area/2493.html
+```
+
+The boundary polygons for the following boroughs were extracted and stored as GeoJSON files in the project:
+
+```bash
+data/geo/camden.json
+data/geo/greenwich.json
+data/geo/tower_hamlets.json
+```
+
+These GeoJSON files contain the geographic coordinates that define the administrative boundaries of each borough.  
+The polygons are used by the application to render borough shapes on the interactive map using **Folium**.
