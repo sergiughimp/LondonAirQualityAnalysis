@@ -18,7 +18,158 @@ Clone the repository and install the required Python libraries:
 
 ```bash
 pip install -r requirements.txt
+```
 
-```Run
-Run with:
-    streamlit run scripts/geospatial_mapping.py
+## Run
+
+Run the application with:
+
+```bash
+streamlit run src/visualization/geospatial_mapping.py
+```
+
+## Data Collection
+
+Air quality data is collected from the LondonAir (LAQN) API.
+
+Script used:
+
+```bash
+src/processing/fetch_air_quality_data.py
+```
+
+The script:
+
+- retrieves monitoring site metadata
+- retrieves pollutant species information
+- fetches pollutant measurements
+- filters results for the following boroughs:
+  - Camden
+  - Greenwich
+  - Tower Hamlets
+
+The raw dataset is stored in:
+
+```bash
+data/raw/air_quality_3_day.json
+```
+
+## Data Processing
+
+The raw JSON dataset is transformed into structured datasets for analysis and visualisation.
+
+Script used:
+
+```bash
+src/processing/process_air_quality_data.py
+```
+
+This script generates two datasets.
+
+### Stations dataset
+
+```bash
+data/processed/stations.csv
+```
+
+Contains:
+
+- borough
+- station name
+- station code
+- site type
+- latitude
+- longitude
+
+### Measurements dataset
+
+```bash
+data/processed/measurements.csv
+```
+
+Contains:
+
+- borough
+- station name
+- station code
+- pollutant code
+- pollutant name
+- measurement date
+- value
+
+## Data Pipeline Overview
+
+The workflow of the project is:
+
+```
+LondonAir API
+      ↓
+fetch_air_quality_data.py
+      ↓
+data/raw/air_quality_3_day.json
+      ↓
+process_air_quality_data.py
+      ↓
+data/processed/stations.csv
+data/processed/measurements.csv
+      ↓
+Streamlit + Folium visualisation
+```
+
+## Project Structure
+
+```
+london-air-quality-analysis/
+│
+├── README.md
+├── CHANGELOG.md
+├── requirements.txt
+├── .gitignore
+├── app.py
+│
+├── data/
+│   ├── raw/
+│   │   └── air_quality_3_day.json
+│   │
+│   ├── processed/
+│   │   ├── stations.csv
+│   │   └── measurements.csv
+│   │
+│   └── geo/
+│       ├── camden.json
+│       ├── greenwich.json
+│       └── tower_hamlets.json
+│
+├── src/
+│   ├── processing/
+│   │   ├── fetch_air_quality_data.py
+│   │   └── process_air_quality_data.py
+│   │
+│   ├── analysis/
+│   │
+│   └── visualisation/
+│       └── geospatial_mapping.py
+│
+├── notebooks/
+│   └── exploratory_analysis.ipynb
+│
+├── docs/
+│   └── project_plan.md
+│
+└── tests/
+    └── test_data_pipeline.py
+```
+
+## Data Source
+
+Air quality data is retrieved from the LondonAir / LAQN API:
+
+```bash
+https://api.erg.ic.ac.uk/AirQuality
+```
+
+The dataset contains monitoring station measurements for:
+
+- Camden
+- Greenwich
+- Tower Hamlets

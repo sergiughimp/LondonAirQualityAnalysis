@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────── FILE PATHS ────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 DATA_FILES = {
     "Tower Hamlets": BASE_DIR / "data" / "geo" / "tower_hamlets.json",
