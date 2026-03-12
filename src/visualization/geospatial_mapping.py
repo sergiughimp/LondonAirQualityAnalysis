@@ -103,6 +103,18 @@ else:
     stations_missing = True
 
 # ─────────────────────────── TITLE ─────────────────────────────────
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-left: 4rem;
+        padding-right: 4rem;
+        max-width: 100%;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 st.title("🗺️ Geospatial Mapping Tool")
 st.write(
     "Explore the borough boundaries of Camden, Greenwich, and Tower Hamlets "
@@ -253,7 +265,7 @@ folium.LayerControl().add_to(m)
 st.subheader(
     f"Map: {selected_borough}" if selected_borough else "Map: All Boroughs"
 )
-st_folium(m, width=None, height=650, use_container_width=True)
+st_folium(m, width=None, height=500, use_container_width=True)
 
 # ─────────────────────────── SUMMARY ───────────────────────────────
 st.divider()
@@ -293,3 +305,33 @@ if show_stations and not stations_df.empty:
     display_stations.columns = ["Station Name", "Site Type"]
 
     st.dataframe(display_stations, use_container_width=True)
+
+# ─────────────────────────── MEASUREMENTS TABLE ────────────────────
+MEASUREMENTS_FILE = BASE_DIR / "data" / "processed" / "measurements.csv"
+
+show_measurements = st.sidebar.checkbox("Show measurements", value=True)
+
+if show_measurements and MEASUREMENTS_FILE.exists():
+    measurements_df = pd.read_csv(MEASUREMENTS_FILE)
+    measurements_df.columns = measurements_df.columns.str.strip().str.lower().str.replace(" ", "_")
+
+    st.divider()
+    st.subheader("📊 Measurements")
+
+    boroughs_to_filter = (
+        [selected_borough] if selected_borough else list(borough_geojson.keys())
+    )
+
+    filtered_measurements = measurements_df[
+        measurements_df["station_name"].isin(
+            stations_df[stations_df["borough"].isin(boroughs_to_filter)]["station_name"]
+        )
+    ]
+
+    display_cols = ["station_name", "pollutant_code", "pollutant_name", "measurement_date", "value"]
+    display_measurements = filtered_measurements[display_cols].reset_index(drop=True)
+    display_measurements.columns = ["Station Name", "Pollutant Code", "Pollutant Name", "Measurement Date", "Value"]
+
+    st.dataframe(display_measurements, use_container_width=True)
+elif not MEASUREMENTS_FILE.exists():
+    st.warning("Measurements file not found: " + str(MEASUREMENTS_FILE))

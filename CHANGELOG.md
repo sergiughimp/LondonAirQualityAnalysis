@@ -86,3 +86,9 @@ Contains:
 ### 7. Filter stations table columns
 - Stations table now displays only station name and site type
 - Removed borough, station code, latitude, and longitude from the table view
+
+### 8. Add measurements table
+- Load measurement data from `data/processed/measurements.csv`
+- Display measurements filtered to the current borough selection
+- Table shows station name, pollutant code, pollutant name, measurement date, and value
+- Add sidebar toggle to show or hide the measurements table
