@@ -101,3 +101,21 @@ Contains:
   - Tower Hamlets: Mile End Road, Blackwall, Bethnal Green
   - Greenwich: Trafalgar Road, Woolwich Flyover, Tunnel Avenue
 - Highlights NO₂, PM2.5, and PM10 as the key pollutants of concern
+
+---
+
+## Application Restructure
+
+### 10. Restructure app to run from app.py with sidebar navigation
+- Moved `st.set_page_config` from `geospatial_mapping.py` to `app.py`
+- Wrapped all geospatial mapping code inside `render_map()` function
+- Added `sys.path` fix to `app.py` to resolve module imports correctly
+- Added `__init__.py` to `src/` and `src/visualization/` directories
+- Added multi-page sidebar navigation in `app.py` with the following pages:
+  - 🗺️ Geospatial Map
+  - 📈 Time Series
+  - 🔥 Heatmap
+  - 🗺️ Choropleth
+  - 📦 Box Plot
+  - 📉 Missing Data
+- Fixed `BASE_DIR` in `geospatial_mapping.py` to correctly resolve project root using `parents[2]`

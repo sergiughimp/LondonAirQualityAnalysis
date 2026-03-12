@@ -17,6 +17,7 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Interactive map controls through a **Streamlit sidebar**
 - Adjustable **zoom level**
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
+- Multi-page navigation with sidebar for geospatial map and analysis pages
 
 ## Installation
 
@@ -147,13 +148,21 @@ london-air-quality-analysis/
 │       └── tower_hamlets.json
 │
 ├── src/
+│   ├── __init__.py
 │   ├── processing/
 │   │   ├── fetch_air_quality_data.py
 │   │   └── process_air_quality_data.py
 │   │
 │   ├── analysis/
+│   │   ├── __init__.py
+│   │   ├── time_series.py
+│   │   ├── heatmap.py
+│   │   ├── choropleth.py
+│   │   ├── box_plot.py
+│   │   └── missing_data.py
 │   │
-│   └── visualisation/
+│   └── visualization/
+│       ├── __init__.py
 │       └── geospatial_mapping.py
 │
 ├── notebooks/
