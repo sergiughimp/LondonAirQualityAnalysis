@@ -290,6 +290,36 @@ for borough in boroughs_to_draw:
 
 st.dataframe(summary_rows, use_container_width=True)
 
+# ─────────────────────────── POLLUTION CONTEXT ─────────────────────
+st.divider()
+with st.expander("🏙️ London Air Pollution — Project Context", expanded=True):
+    st.markdown("""
+    ### Why These Boroughs?
+    London's worst air pollution follows its busiest roads. This project monitors three boroughs
+    that sit directly on major pollution corridors.
+
+    ### Key Pollution Hotspots
+
+    | Borough | Key Station | Pollution Driver |
+    |---|---|---|
+    | Camden | Euston Road, London NW1 | Major traffic corridor, high NO₂ and PM2.5 |
+    | Camden | Swiss Cottage, London NW3 | Kerbside exposure, diesel vehicles |
+    | Camden | Bloomsbury, London WC1 | Urban background, mixed traffic exposure |
+    | Tower Hamlets | Mile End Road, London E1 | Commuter and freight traffic |
+    | Tower Hamlets | Blackwall, London E14 | Urban congestion, roadside exposure |
+    | Tower Hamlets | Bethnal Green, London E2 | Urban background, residential and road pollution |
+    | Greenwich | Trafalgar Road, London SE10 | High-density road corridor |
+    | Greenwich | Woolwich Flyover, London SE18 | Heavy vehicle and freight movement |
+    | Greenwich | Tunnel Avenue, London SE10 | Industrial and road corridor exposure |
+                
+    ### Why It Matters
+    These stations capture real-world exposure to **NO₂**, **PM2.5**, and **PM10** — the three
+    pollutants most linked to respiratory and cardiovascular health impacts in urban populations.
+
+    > Camden, Tower Hamlets, and Greenwich together represent central, east, and south-east London
+    — giving a cross-city picture of roadside and urban background pollution.
+    """)
+
 # ─────────────────────────── STATIONS TABLE ────────────────────────
 if show_stations and not stations_df.empty:
     st.divider()

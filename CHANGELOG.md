@@ -92,3 +92,12 @@ Contains:
 - Display measurements filtered to the current borough selection
 - Table shows station name, pollutant code, pollutant name, measurement date, and value
 - Add sidebar toggle to show or hide the measurements table
+
+### 9. Add London air pollution context section
+- Added 🏙️ London Air Pollution — Project Context section below the Borough Summary
+- Explains why Camden, Tower Hamlets, and Greenwich were selected
+- Lists key monitoring stations per borough with their pollution drivers:
+  - Camden: Euston Road, Swiss Cottage, Bloomsbury
+  - Tower Hamlets: Mile End Road, Blackwall, Bethnal Green
+  - Greenwich: Trafalgar Road, Woolwich Flyover, Tunnel Avenue
+- Highlights NO₂, PM2.5, and PM10 as the key pollutants of concern

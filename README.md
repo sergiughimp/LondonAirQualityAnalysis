@@ -10,6 +10,7 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Displays **borough centre markers**
 - Displays **air quality monitoring stations** as markers on the map
 - Toggle to show or hide monitoring stations
+- Displays **London air pollution context** with key hotspots and project relevance
 - Stations table showing **station name** and **site type**
 - Displays **air quality measurements** in a table below the map
 - Toggle to show or hide measurements table
