@@ -120,3 +120,25 @@ Contains:
   - 📉 Missing Data
 - Fixed `BASE_DIR` in `geospatial_mapping.py` to correctly resolve project root using `parents[2]`
 
+---
+
+## Analysis Charts
+
+### 11. Add hourly pollutant time series
+- Created `src/analysis/time_series.py` with `render_time_series()` function
+- Line chart tracking hourly pollutant concentrations per station over 48 hours
+- Rush hour bands annotated for morning (07:00–09:00) and evening (17:00–19:00)
+- WHO guideline threshold line with label (NO₂: 25 µg/m³, PM2.5: 15 µg/m³, PM10: 45 µg/m³)
+- Pollutant selector for NO₂, PM2.5, and PM10
+- Borough filter in sidebar
+- Station names sorted alphabetically in legend with full label visibility
+- Peak readings summary table below chart sorted alphabetically by station
+
+### 12. Add pollution heatmap
+- Created `src/analysis/heatmap.py` with `render_heatmap()` function
+- Matrix visualisation of average pollutant concentration by station and hour of day
+- Split into separate heatmaps per day for accurate temporal comparison
+- Pollutant selector for NO₂, PM2.5, and PM10
+- Borough filter in sidebar
+- Station names sorted alphabetically on y-axis with full label visibility
+- Average pollutant summary table below chart sorted alphabetically by station

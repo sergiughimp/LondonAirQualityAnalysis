@@ -18,7 +18,9 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Adjustable **zoom level**
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
 - Multi-page navigation with sidebar for geospatial map and analysis pages
-
+- 📈 Hourly pollutant time series with rush hour annotations and WHO threshold
+- 🔥 Pollution heatmap split by day with station vs hour of day
+- Pollutant selector for NO₂, PM2.5, and PM10 across analysis charts
 
 ## Installation
 
