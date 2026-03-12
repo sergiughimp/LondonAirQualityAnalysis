@@ -19,6 +19,7 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
 - Multi-page navigation with sidebar for geospatial map and analysis pages
 
+
 ## Installation
 
 Clone the repository and install the required Python libraries:
