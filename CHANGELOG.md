@@ -170,3 +170,17 @@ Contains:
 - Summary statistics table below chart showing Min, Q1, Median, Q3, Max, Mean, Std Dev
 - WHO exceedance flag per station in summary table
 - Collapsible `ℹ️ About` expander explaining how to read the chart
+
+### 16. Add missing data analysis page
+- Created `src/analysis/missing_data.py` with `render_missing_data()` function
+- Impact on analysis expander at the top of the page explaining how missing data
+  affects time series, heatmap, choropleth, and box plot pages
+- Four visualisations:
+  - 🟥 Heatmap grid — station vs hour coloured by % missing
+  - 📊 Bar chart — stations ranked by % missing, colour-coded by borough
+  - 📅 Timeline — station vs day coloured by % missing
+  - 📋 Summary table — total, missing, present counts and % per station
+- Status flag per station: ✅ Good (<5%), ⚡ Moderate (5–20%), ⚠️ High (>20%)
+- All six pollutants available in sidebar selector (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Borough filter with all boroughs or single borough view
+- Collapsible `ℹ️ About` expander below each visualisation

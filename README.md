@@ -35,6 +35,14 @@ It displays the boundaries of selected London boroughs and allows users to explo
   - IQR box, min-max whisker, and median line per station
   - WHO threshold line with label
   - Full station statistics table with WHO exceedance flag
+- 📉 Missing data analysis page with four visualisations:
+  - Heatmap grid showing % missing per station and hour of day
+  - Bar chart ranking stations by % missing, colour-coded by borough
+  - Timeline showing % missing per station and day
+  - Summary table with total, missing, and present counts per station
+- Missing data status flag per station: Good, Moderate, or High
+- Impact on analysis section at the top explaining how gaps affect every other page
+- All six pollutants available for missing data analysis
 - Pollutant selector for all six pollutants (NO₂, PM2.5, PM10, O₃, SO₂, CO) across choropleth views
 - WHO threshold status shown in choropleth summary tables
 
