@@ -159,3 +159,14 @@ Contains:
 - Added WHO threshold comparison in peak reading and day-by-day views
 - Added summary table below each map view
 - Added collapsible `ℹ️ About` expander below each view
+
+### 15. Add box plot page
+- Created `src/analysis/box_plot.py` with `render_box_plot()` function
+- Manual box plot built with Altair using whisker, IQR box, and median tick layers
+- Dynamically filters to the 3 pollutants with the most valid readings
+- Borough filter selectbox with "All boroughs" option
+- WHO guideline threshold line with label for each pollutant
+- Full station labels shown with `labelLimit=0` and angled axis
+- Summary statistics table below chart showing Min, Q1, Median, Q3, Max, Mean, Std Dev
+- WHO exceedance flag per station in summary table
+- Collapsible `ℹ️ About` expander explaining how to read the chart

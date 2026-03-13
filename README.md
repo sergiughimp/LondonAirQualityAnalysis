@@ -29,6 +29,12 @@ It displays the boundaries of selected London boroughs and allows users to explo
   - Most polluted hour of day per borough
   - Day-by-day average with date slider
   - Difference from London average across all three boroughs
+- 📦 Box plot showing distribution of hourly readings per station, colour-coded by borough:
+  - Top 3 pollutants with most data dynamically selected
+  - Borough filter with all boroughs or single borough view
+  - IQR box, min-max whisker, and median line per station
+  - WHO threshold line with label
+  - Full station statistics table with WHO exceedance flag
 - Pollutant selector for all six pollutants (NO₂, PM2.5, PM10, O₃, SO₂, CO) across choropleth views
 - WHO threshold status shown in choropleth summary tables
 
