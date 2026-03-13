@@ -13,7 +13,7 @@ BASE = "https://api.erg.ic.ac.uk/AirQuality"
 TARGET_BOROUGHS = {"Camden", "Greenwich", "Tower Hamlets"}
 
 START = date(2026, 2, 23)
-END = date(2026, 2, 25)
+END = date(2026, 2, 26)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_FILE = PROJECT_ROOT / "data" / "raw" / "air_quality_3_days.json"
