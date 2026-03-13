@@ -1,55 +1,63 @@
-# 🗺️ Geospatial Mapping Tool
+# 🗺️ London Air Quality Analysis
 
-This project is an interactive geospatial visualization application built with **Streamlit** and **Folium**.  
-It displays the boundaries of selected London boroughs and allows users to explore them interactively on a map.
+An interactive multi-page air quality analysis application built with **Streamlit**, **Folium**, and **Altair**.  
+It displays borough boundaries, monitoring stations, and pollution data across Camden, Greenwich, and Tower Hamlets.
 
 ## Features
 
+### 🗺️ Geospatial Map
 - Visualizes borough boundaries using **GeoJSON data**
-- Supports viewing **a single borough or all boroughs together**
-- Displays **borough centre markers**
-- Displays **air quality monitoring stations** as markers on the map
-- Toggle to show or hide monitoring stations
-- Displays **London air pollution context** with key hotspots and project relevance
-- Stations table showing **station name** and **site type**
-- Displays **air quality measurements** in a table below the map
-- Toggle to show or hide measurements table
-- Displays **pollutants reference table** showing pollutant code and name for the selected borough(s)
-- Toggle to show or hide pollutants table
-- Collapsible **ℹ️ About** descriptions below Monitoring Stations, Pollutants, and Measurements tables
-- Interactive map controls through a **Streamlit sidebar**
-- Adjustable **zoom level**
+- Supports viewing a single borough or all boroughs together
+- Displays borough centre markers, labels, and polygon fill
+- Displays air quality monitoring stations as markers on the map
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
-- Multi-page navigation with sidebar for geospatial map and analysis pages
-- 📈 Hourly pollutant time series with rush hour annotations and WHO threshold
-- 🔥 Pollution heatmap split by day with station vs hour of day
-- Pollutant selector for NO₂, PM2.5, and PM10 across analysis charts
-- 🗺️ Choropleth map with four view modes:
-  - Peak reading per borough shaded by highest recorded concentration
-  - Most polluted hour of day per borough
-  - Day-by-day average with date slider
-  - Difference from London average across all three boroughs
-- 📦 Box plot showing distribution of hourly readings per station, colour-coded by borough:
-  - Top 3 pollutants with most data dynamically selected
-  - Borough filter with all boroughs or single borough view
-  - IQR box, min-max whisker, and median line per station
-  - WHO threshold line with label
-  - Full station statistics table with WHO exceedance flag
-- 📉 Missing data analysis page with four visualisations:
-  - Heatmap grid showing % missing per station and hour of day
-  - Bar chart ranking stations by % missing, colour-coded by borough
-  - Timeline showing % missing per station and day
-  - Summary table with total, missing, and present counts per station
-- Missing data status flag per station: Good, Moderate, or High
+- Adjustable zoom level
+- Sidebar toggles for stations, pollutants, and measurements tables
+- Collapsible **ℹ️ About** descriptions below each table
+- London air pollution context with key hotspots and project relevance
+
+### 📈 Time Series
+- Hourly pollutant concentrations per station over the full dataset period
+- Rush hour bands annotated (07:00–09:00 and 17:00–19:00)
+- WHO guideline threshold line with label
+- Pollutant selector for NO₂, PM2.5, and PM10
+- Borough filter and peak readings summary table
+
+### 🔥 Heatmap
+- Matrix of average pollutant concentration by station and hour of day
+- Split into separate heatmaps per day
+- Pollutant selector for NO₂, PM2.5, and PM10
+- Borough filter and average summary table
+
+### 🗺️ Choropleth
+- Borough shading based on four view modes:
+  - 🏔️ Peak reading — highest recorded concentration per borough
+  - 🕐 Most polluted hour — hour of day with highest average per borough
+  - 📅 Day-by-day — date slider to step through daily averages
+  - 📊 vs London average — deviation from overall average across all boroughs
+- All six pollutants selectable (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- WHO threshold status shown in summary tables
+
+### 📦 Box Plot
+- Distribution of hourly readings per station, colour-coded by borough
+- Top 3 pollutants with most data dynamically selected
+- IQR box, min-max whisker, and median line per station
+- WHO threshold line with label
+- Full station statistics table with WHO exceedance flag
+
+### 📉 Missing Data Analysis
 - Impact on analysis section at the top explaining how gaps affect every other page
-- All six pollutants available for missing data analysis
-- Pollutant selector for all six pollutants (NO₂, PM2.5, PM10, O₃, SO₂, CO) across choropleth views
-- WHO threshold status shown in choropleth summary tables
+- Four visualisations:
+  - 🟥 Heatmap grid — % missing per station and hour of day
+  - 📊 Bar chart — stations ranked by % missing, colour-coded by borough
+  - 📅 Timeline — % missing per station and day
+  - 📋 Summary table — total, missing, and present counts per station
+- Status flag per station: ✅ Good (<5%), ⚡ Moderate (5–20%), ⚠️ High (>20%)
+- All six pollutants available
 
 ## Installation
 
 Clone the repository and install the required Python libraries:
-
 ```bash
 pip install -r requirements.txt
 ```
@@ -57,17 +65,31 @@ pip install -r requirements.txt
 ## Run
 
 Run the application with:
-
 ```bash
-streamlit run src/visualisation/geospatial_mapping.py
+streamlit run streamlit_app.py
 ```
+
+## App Structure
+
+`app.py` is organised into the following functions:
+
+- `run_pipeline()` — fetches and processes data sequentially with progress spinners
+- `data_is_ready()` — checks whether processed CSV files exist
+- `clear_data()` — deletes raw and processed files to force a fresh pipeline run
+- `load_measurements()` — loads `measurements.csv` into a DataFrame
+- `load_stations()` — loads `stations.csv` into a DataFrame
+- `render_sidebar()` — renders navigation and data management controls, returns selected page
+- `render_page()` — routes to the correct page renderer based on sidebar selection
+- `main()` — entry point, runs pipeline if data is missing then renders the app
+
+On first launch, if processed data is not found, the pipeline runs automatically.
+Use the **🔄 Refresh data** button in the sidebar to re-fetch and reprocess at any time.
 
 ## Data Collection
 
 Air quality data is collected from the LondonAir (LAQN) API.
 
 Script used:
-
 ```bash
 src/processing/fetch_air_quality_data.py
 ```
@@ -76,14 +98,13 @@ The script:
 
 - retrieves monitoring site metadata
 - retrieves pollutant species information
-- fetches pollutant measurements
+- fetches pollutant measurements for 23–26 Feb 2026
 - filters results for the following boroughs:
   - Camden
   - Greenwich
   - Tower Hamlets
 
 The raw dataset is stored in:
-
 ```bash
 data/raw/air_quality_3_days.json
 ```
@@ -93,7 +114,6 @@ data/raw/air_quality_3_days.json
 The raw JSON dataset is transformed into structured datasets for analysis and visualisation.
 
 Script used:
-
 ```bash
 src/processing/process_air_quality_data.py
 ```
@@ -101,7 +121,6 @@ src/processing/process_air_quality_data.py
 This script generates two datasets.
 
 ### Stations dataset
-
 ```bash
 data/processed/stations.csv
 ```
@@ -116,7 +135,6 @@ Contains:
 - longitude
 
 ### Measurements dataset
-
 ```bash
 data/processed/measurements.csv
 ```
@@ -132,9 +150,6 @@ Contains:
 - value
 
 ## Data Pipeline Overview
-
-The workflow of the project is:
-
 ```
 LondonAir API
       ↓
@@ -147,11 +162,10 @@ process_air_quality_data.py
 data/processed/stations.csv
 data/processed/measurements.csv
       ↓
-Streamlit + Folium visualisation
+Streamlit + Folium + Altair visualisation
 ```
 
 ## Project Structure
-
 ```
 london-air-quality-analysis/
 │
@@ -205,7 +219,6 @@ london-air-quality-analysis/
 ## Data Source
 
 Air quality data is retrieved from the LondonAir / LAQN API:
-
 ```bash
 https://api.erg.ic.ac.uk/AirQuality
 ```
@@ -218,21 +231,18 @@ The dataset contains monitoring station measurements for:
 
 ## Borough Boundary Data
 
-The polygon boundary data used to visualise the London boroughs in this project was obtained from **MapIt by mySociety**, a service that provides geographic boundary data for UK administrative areas.
+The polygon boundary data was obtained from **MapIt by mySociety**.
 
 Source:
-
 ```bash
 https://mapit.mysociety.org/area/2493.html
 ```
 
-The boundary polygons for the following boroughs were extracted and stored as GeoJSON files in the project:
-
+Boundary polygons stored as GeoJSON files:
 ```bash
 data/geo/camden.json
 data/geo/greenwich.json
 data/geo/tower_hamlets.json
 ```
 
-These GeoJSON files contain the geographic coordinates that define the administrative boundaries of each borough.  
-The polygons are used by the application to render borough shapes on the interactive map using **Folium**.
+These files contain the geographic coordinates used to render borough shapes on the interactive map using **Folium**.

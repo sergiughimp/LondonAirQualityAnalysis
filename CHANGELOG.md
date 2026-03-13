@@ -184,3 +184,15 @@ Contains:
 - All six pollutants available in sidebar selector (NO₂, PM2.5, PM10, O₃, SO₂, CO)
 - Borough filter with all boroughs or single borough view
 - Collapsible `ℹ️ About` expander below each visualisation
+
+### 17. Refactor app.py structure
+- Added automatic data pipeline on first launch if processed data is missing
+- Added `run_pipeline()` function to run fetch and process scripts sequentially with spinners
+- Added `data_is_ready()` helper to check if processed data exists
+- Added `clear_data()` helper to delete raw and processed files before refresh
+- Added `load_measurements()` and `load_stations()` data loader helpers
+- Added `render_sidebar()` function returning the selected page
+- Added `render_page()` function routing to the correct page renderer
+- Added `main()` function as single entry point called at module level
+- Added 🔄 Refresh data button in sidebar under Data Management section
+- File paths consolidated into `DATA_DIR` and `PROCESSING_DIR` constants

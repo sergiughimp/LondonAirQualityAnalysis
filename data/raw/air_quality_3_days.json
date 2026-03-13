@@ -23134,14 +23134,6 @@
     ]
   },
   "status_summary": {
-    "Tower Hamlets": {
-      "total_requests": 24,
-      "status_codes": {
-        "200": 24
-      },
-      "successful_requests": 24,
-      "failed_requests": 0
-    },
     "Camden": {
       "total_requests": 18,
       "status_codes": {
@@ -23156,6 +23148,14 @@
         "200": 35
       },
       "successful_requests": 35,
+      "failed_requests": 0
+    },
+    "Tower Hamlets": {
+      "total_requests": 24,
+      "status_codes": {
+        "200": 24
+      },
+      "successful_requests": 24,
       "failed_requests": 0
     }
   }
