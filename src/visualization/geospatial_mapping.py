@@ -165,6 +165,7 @@ def render_map():
     st.sidebar.header("📍 Stations")
 
     show_stations = st.sidebar.checkbox("Show monitoring stations", value=True)
+    show_pollutants = st.sidebar.checkbox("Show pollutants", value=True)
     show_measurements = st.sidebar.checkbox("Show measurements", value=True)
 
     # ─────────────────────────── MAP SETUP ─────────────────────────────
@@ -340,6 +341,55 @@ def render_map():
         display_stations.columns = ["Station Name", "Site Type"]
 
         st.dataframe(display_stations, use_container_width=True)
+        with st.expander("ℹ️ About these stations", expanded=False):
+            st.markdown("""
+            These monitoring stations are operated by the London Air Quality Network (LAQN) and
+            maintained by local councils. Each station is strategically placed to capture either
+            **roadside** exposure — directly beside busy roads — or **urban background** levels,
+            reflecting what residents breathe away from traffic. The mix of site types across
+            Camden, Tower Hamlets, and Greenwich gives a realistic picture of pollution both
+            at its worst and at typical residential levels.
+            """)
+
+    # ─────────────────────────── POLLUTANTS TABLE ──────────────────────
+    if show_pollutants and MEASUREMENTS_FILE.exists():
+        st.divider()
+        st.subheader("🧪 Pollutants in This Dataset")
+
+        boroughs_to_filter = (
+            [selected_borough] if selected_borough else list(borough_geojson.keys())
+        )
+
+        _mdf = pd.read_csv(MEASUREMENTS_FILE)
+        _mdf.columns = _mdf.columns.str.strip().str.lower().str.replace(" ", "_")
+        _filtered = _mdf[
+            _mdf["station_name"].isin(
+                stations_df[stations_df["borough"].isin(boroughs_to_filter)]["station_name"]
+            )
+        ]
+
+        pollutant_ref = (
+            _filtered[["pollutant_code", "pollutant_name"]]
+            .drop_duplicates()
+            .sort_values("pollutant_code")
+            .reset_index(drop=True)
+        )
+        pollutant_ref.columns = ["Pollutant Code", "Pollutant Name"]
+        st.dataframe(pollutant_ref, use_container_width=True)
+        with st.expander("ℹ️ About these pollutants", expanded=False):
+            st.markdown("""
+            - **NO₂ (Nitrogen Dioxide)** — produced mainly by diesel vehicles and gas boilers.
+            Long-term exposure irritates the airways and worsens asthma and lung disease.
+            - **PM2.5 & PM10 (Particulate Matter)** — tiny particles from exhaust, tyre and brake wear,
+            and construction dust. PM2.5 penetrates deep into the lungs and enters the bloodstream,
+            linked to heart disease and premature death.
+            - **O₃ (Ozone)** — forms when sunlight reacts with vehicle and industrial emissions.
+            High levels cause breathing difficulties, especially in summer.
+            - **SO₂ (Sulphur Dioxide)** — released by burning fossil fuels. Can trigger asthma
+            attacks and reduce lung function at elevated concentrations.
+            - **CO (Carbon Monoxide)** — produced by incomplete combustion. Readings in this dataset
+            are largely empty, indicating sensors were inactive or below detection limits.
+            """)
 
     # ─────────────────────────── MEASUREMENTS TABLE ────────────────────
     if show_measurements and MEASUREMENTS_FILE.exists():
@@ -364,5 +414,15 @@ def render_map():
         display_measurements.columns = ["Station Name", "Pollutant Code", "Pollutant Name", "Measurement Date", "Value"]
 
         st.dataframe(display_measurements, use_container_width=True)
+        with st.expander("ℹ️ About these measurements", expanded=False):
+            st.markdown("""
+            Readings are recorded **hourly** by each station and reported in **µg/m³**
+            (micrograms per cubic metre). The dataset covers a 3-day snapshot across Camden,
+            Tower Hamlets, and Greenwich. Some stations show gaps or anomalous spikes — these
+            reflect real-world sensor issues such as calibration drift or temporary outages,
+            which are common in continuous ambient monitoring networks. Values should be
+            interpreted alongside WHO guideline thresholds: **NO₂ 25 µg/m³**, **PM2.5 15 µg/m³**,
+            and **PM10 45 µg/m³** as annual mean targets.
+            """)
     elif not MEASUREMENTS_FILE.exists():
         st.warning("Measurements file not found: " + str(MEASUREMENTS_FILE))

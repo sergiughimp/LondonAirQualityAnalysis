@@ -142,3 +142,8 @@ Contains:
 - Borough filter in sidebar
 - Station names sorted alphabetically on y-axis with full label visibility
 - Average pollutant summary table below chart sorted alphabetically by station
+
+### 13. Add pollutants reference table with sidebar toggle and expander descriptions
+- Added pollutants reference table on the Geospatial Map page showing pollutant code and name
+- Added sidebar checkbox to toggle pollutants table visibility (`Show pollutants`)
+- Added collapsible `ℹ️ About` expanders below Monitoring Stations, Pollutants, and Measurements tables with contextual descriptions

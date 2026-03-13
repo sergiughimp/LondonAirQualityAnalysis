@@ -14,6 +14,9 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - Stations table showing **station name** and **site type**
 - Displays **air quality measurements** in a table below the map
 - Toggle to show or hide measurements table
+- Displays **pollutants reference table** showing pollutant code and name for the selected borough(s)
+- Toggle to show or hide pollutants table
+- Collapsible **ℹ️ About** descriptions below Monitoring Stations, Pollutants, and Measurements tables
 - Interactive map controls through a **Streamlit sidebar**
 - Adjustable **zoom level**
 - Multiple map styles (OpenStreetMap, CartoDB Positron, CartoDB Dark Matter)
