@@ -24,6 +24,13 @@ It displays the boundaries of selected London boroughs and allows users to explo
 - 📈 Hourly pollutant time series with rush hour annotations and WHO threshold
 - 🔥 Pollution heatmap split by day with station vs hour of day
 - Pollutant selector for NO₂, PM2.5, and PM10 across analysis charts
+- 🗺️ Choropleth map with four view modes:
+  - Peak reading per borough shaded by highest recorded concentration
+  - Most polluted hour of day per borough
+  - Day-by-day average with date slider
+  - Difference from London average across all three boroughs
+- Pollutant selector for all six pollutants (NO₂, PM2.5, PM10, O₃, SO₂, CO) across choropleth views
+- WHO threshold status shown in choropleth summary tables
 
 ## Installation
 

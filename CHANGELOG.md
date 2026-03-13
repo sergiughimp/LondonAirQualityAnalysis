@@ -147,3 +147,15 @@ Contains:
 - Added pollutants reference table on the Geospatial Map page showing pollutant code and name
 - Added sidebar checkbox to toggle pollutants table visibility (`Show pollutants`)
 - Added collapsible `ℹ️ About` expanders below Monitoring Stations, Pollutants, and Measurements tables with contextual descriptions
+
+### 14. Add choropleth map with four view modes
+- Created `src/analysis/choropleth.py` with `render_choropleth()` function
+- Added sidebar mode selector with four views:
+  - 🏔️ Peak reading — shades each borough by its highest recorded concentration
+  - 🕐 Most polluted hour — shades by the hour of day with the highest average concentration
+  - 📅 Day-by-day — date slider to step through daily averages across the dataset
+  - 📊 vs London average — shades by how far each borough deviates from the overall average
+- Added pollutant selector for all six pollutants (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Added WHO threshold comparison in peak reading and day-by-day views
+- Added summary table below each map view
+- Added collapsible `ℹ️ About` expander below each view
