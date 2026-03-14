@@ -1,3 +1,4 @@
+import argparse
 import requests
 import json
 from datetime import date
@@ -12,11 +13,16 @@ from urllib3.util.retry import Retry
 BASE = "https://api.erg.ic.ac.uk/AirQuality"
 TARGET_BOROUGHS = {"Camden", "Greenwich", "Tower Hamlets"}
 
-START = date(2026, 2, 23)
-END = date(2026, 2, 26)
+parser = argparse.ArgumentParser()
+parser.add_argument("--start", type=str, required=True)
+parser.add_argument("--end",   type=str, required=True)
+args = parser.parse_args()
+
+START = date.fromisoformat(args.start)
+END   = date.fromisoformat(args.end)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-OUTPUT_FILE = PROJECT_ROOT / "data" / "raw" / "air_quality_3_days.json"
+OUTPUT_FILE = PROJECT_ROOT / "data" / "raw" / "air_quality.json"
 
 # -----------------------------
 # 2) Requests session with retry

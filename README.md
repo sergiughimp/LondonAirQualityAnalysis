@@ -98,12 +98,12 @@ The script:
 
 - retrieves monitoring site metadata
 - retrieves pollutant species information
-- fetches pollutant measurements for 23–26 Feb 2026
+- fetches pollutant measurements for the **date range selected in the sidebar**
 - filters results for the following boroughs:
   - Camden
   - Greenwich
   - Tower Hamlets
-
+  
 The raw dataset is stored in:
 ```bash
 data/raw/air_quality_3_days.json

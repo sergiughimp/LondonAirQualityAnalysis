@@ -196,3 +196,11 @@ Contains:
 - Added `main()` function as single entry point called at module level
 - Added 🔄 Refresh data button in sidebar under Data Management section
 - File paths consolidated into `DATA_DIR` and `PROCESSING_DIR` constants
+
+### 18. Add dynamic date range selection
+- Removed hardcoded `START` and `END` dates from `fetch_air_quality_data.py`
+- Added `argparse` to `fetch_air_quality_data.py` with `--start` and `--end` arguments
+- Updated `run_pipeline()` in `app.py` to accept and pass `start_date` and `end_date`
+- Added date pickers in sidebar under 📅 Date Range section
+- Replaced automatic pipeline on first launch with manual **🔄 Fetch data** button
+- App now prompts user to select a date range before fetching data

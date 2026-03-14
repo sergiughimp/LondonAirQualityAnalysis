@@ -7,7 +7,7 @@ from pathlib import Path
 # -----------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-RAW_FILE = PROJECT_ROOT / "data" / "raw" / "air_quality_3_days.json"
+RAW_FILE = PROJECT_ROOT / "data" / "raw" / "air_quality.json"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 
 STATIONS_FILE = PROCESSED_DIR / "stations.csv"

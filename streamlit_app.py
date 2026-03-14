@@ -2,6 +2,7 @@ import sys
 import subprocess
 import streamlit as st
 import pandas as pd
+from datetime import date
 from pathlib import Path
 
 # ─────────────────────────── PATH SETUP ────────────────────────────
@@ -25,15 +26,23 @@ FETCH_SCRIPT      = PROCESSING_DIR / "fetch_air_quality_data.py"
 PROCESS_SCRIPT    = PROCESSING_DIR / "process_air_quality_data.py"
 
 # ─────────────────────────── PIPELINE ──────────────────────────────
-def run_pipeline():
+def run_pipeline(start_date, end_date):
     steps = [
-        ("🌐 Fetching air quality data from LondonAir API...", FETCH_SCRIPT),
-        ("⚙️ Processing raw data...",                          PROCESS_SCRIPT),
+        (
+            "🌐 Fetching air quality data from LondonAir API...",
+            FETCH_SCRIPT,
+            ["--start", str(start_date), "--end", str(end_date)],
+        ),
+        (
+            "⚙️ Processing raw data...",
+            PROCESS_SCRIPT,
+            [],
+        ),
     ]
-    for message, script in steps:
+    for message, script, args in steps:
         with st.spinner(message):
             result = subprocess.run(
-                [sys.executable, str(script)],
+                [sys.executable, str(script)] + args,
                 capture_output=True,
                 text=True,
             )
@@ -59,7 +68,7 @@ def load_stations() -> pd.DataFrame:
     return pd.read_csv(STATIONS_FILE)
 
 # ─────────────────────────── SIDEBAR ───────────────────────────────
-def render_sidebar() -> str:
+def render_sidebar():
     st.sidebar.title("🗺️ Navigation")
 
     page = st.sidebar.radio(
@@ -75,10 +84,15 @@ def render_sidebar() -> str:
     )
 
     st.sidebar.divider()
+    st.sidebar.caption("📅 Date Range")
+    start_date = st.sidebar.date_input("Start date")
+    end_date   = st.sidebar.date_input("End date")
+
+    st.sidebar.divider()
     st.sidebar.caption("Data Management")
-    if st.sidebar.button("🔄 Refresh data"):
+    if st.sidebar.button("🔄 Fetch data"):
         clear_data()
-        run_pipeline()
+        run_pipeline(start_date, end_date)
 
     return page
 
@@ -112,8 +126,9 @@ def render_page(page: str):
 def main():
     if not data_is_ready():
         st.title("🗺️ London Air Quality Analysis")
-        st.info("📦 Processed data not found. Running data pipeline...")
-        run_pipeline()
+        st.info("👈 Select a date range in the sidebar and click **🔄 Fetch data** to begin.")
+        render_sidebar()
+        st.stop()
 
     page = render_sidebar()
     render_page(page)
