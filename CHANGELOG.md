@@ -204,3 +204,18 @@ Contains:
 - Added date pickers in sidebar under 📅 Date Range section
 - Replaced automatic pipeline on first launch with manual **🔄 Fetch data** button
 - App now prompts user to select a date range before fetching data
+
+### 19. Add Health Impact and Correlation Analysis pages
+- Created `src/analysis/health_impact.py` with `render_health_impact()` function
+  - WHO exceedance hours per borough shown as grouped bar chart
+  - Overall risk ranking per station based on average exceedance across all pollutants
+  - Full exceedance breakdown table per station and pollutant
+  - Risk levels: ✅ None, 🟡 Low, 🟠 Moderate, 🔴 High, 🚨 Very High
+  - Borough filter in sidebar
+- Created `src/analysis/correlation.py` with `render_correlation()` function
+  - Pollutant correlation heatmap with Pearson coefficients
+  - Interactive scatter plot with x and y pollutant selectors
+  - Correlation matrix table
+  - Borough filter in sidebar
+- Removed 🎻 Violin Plot page
+- Updated sidebar navigation and page router in `streamlit_app.py`

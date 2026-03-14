@@ -45,6 +45,20 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 - WHO threshold line with label
 - Full station statistics table with WHO exceedance flag
 
+### 📊 Correlation Analysis
+- Pollutant correlation heatmap with Pearson coefficients
+- Interactive scatter plot with x and y pollutant selectors
+- Colour-coded by borough
+- Full correlation matrix table
+- Borough filter in sidebar
+
+### 🏥 Health Impact
+- WHO exceedance hours per borough shown as grouped bar chart
+- Overall risk ranking per station based on average exceedance across all pollutants
+- Full exceedance breakdown table per station and pollutant
+- Risk levels: ✅ None, 🟡 Low, 🟠 Moderate, 🔴 High, 🚨 Very High
+- Borough filter in sidebar
+
 ### 📉 Missing Data Analysis
 - Impact on analysis section at the top explaining how gaps affect every other page
 - Four visualisations:
@@ -103,7 +117,7 @@ The script:
   - Camden
   - Greenwich
   - Tower Hamlets
-  
+
 The raw dataset is stored in:
 ```bash
 data/raw/air_quality_3_days.json

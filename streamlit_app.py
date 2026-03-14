@@ -78,7 +78,8 @@ def render_sidebar():
             "📈 Time Series",
             "🔥 Heatmap",
             "🗺️ Choropleth",
-            "📦 Box Plot",
+            "📊 Correlation Analysis",
+            "🏥 Health Impact",
             "📉 Missing Data",
         ]
     )
@@ -114,9 +115,13 @@ def render_page(page: str):
         from src.analysis.choropleth import render_choropleth
         render_choropleth(load_measurements(), load_stations())
 
-    elif page == "📦 Box Plot":
-        from src.analysis.box_plot import render_box_plot
-        render_box_plot(load_measurements())
+    elif page == "📊 Correlation Analysis":
+        from src.analysis.correlation import render_correlation
+        render_correlation(load_measurements())
+
+    elif page == "🏥 Health Impact":
+        from src.analysis.health_impact import render_health_impact
+        render_health_impact(load_measurements())
 
     elif page == "📉 Missing Data":
         from src.analysis.missing_data import render_missing_data
