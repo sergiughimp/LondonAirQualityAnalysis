@@ -322,4 +322,12 @@ Contains:
 - `ℹ️ About this chart` expander updated with WHO thresholds table and interpretation guidance
 - Borough column removed from both summary tables with `.drop(columns=["Borough"])`
 - `ℹ️ About these tables` expander updated with risk levels as a table instead of bullet list
-- Code style fully aligned across all sections
+
+### 27. Refactor and improve missing data page
+- Replaced `st.write()` with `st.markdown()` for professional intro description
+- Added `⚠️` prefix to warning message for consistency
+- `st.caption()` added above all four sections with contextual descriptions
+- Impact on analysis expander updated to include Health Impact and Correlation Analysis pages
+- `ℹ️ About this chart` expanders rewritten for all three charts with `How to read` and `Interpretation guidance` sections
+- `ℹ️ About this table` expander updated with status flags as a table instead of bullet list
+- Borough column removed from summary table with `.drop(columns=["Borough"])`

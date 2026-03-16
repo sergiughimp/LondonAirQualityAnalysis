@@ -77,14 +77,16 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 - Collapsible **ℹ️ About** expanders below chart and tables with WHO thresholds and interpretation guidance
 
 ### 📉 Missing Data Analysis
-- Impact on analysis section at the top explaining how gaps affect every other page
+- Impact on analysis expander covering all eight pages including Health Impact and Correlation
 - Four visualisations:
   - 🟥 Heatmap grid — % missing per station and hour of day
   - 📊 Bar chart — stations ranked by % missing, colour-coded by borough
   - 📅 Timeline — % missing per station and day
   - 📋 Summary table — total, missing, and present counts per station
-- Status flag per station: ✅ Good (<5%), ⚡ Moderate (5–20%), ⚠️ High (>20%)
-- All six pollutants available
+- Borough column removed from summary table for cleaner display
+- Missing data status flag per station: ✅ Good (<5%), ⚡ Moderate (5–20%), ⚠️ High (>20%)
+- All six pollutants available for missing data analysis
+- Collapsible **ℹ️ About** expanders below all four sections with How to read and Interpretation guidance
 
 ## Installation
 
