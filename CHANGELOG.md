@@ -250,3 +250,21 @@ Contains:
 - Negative values excluded from daily summaries
 - About expander updated to explain all columns and reflect daily summary format
 - Caption updated to describe daily summary format
+
+### 22. Refactor and improve time series page
+- Added all 6 pollutants to selector (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Added `WHO_THRESHOLDS` and `BOROUGH_COLOURS` constants block at top of file
+- Replaced `st.write()` with `st.markdown()` for professional intro description
+- Sidebar header renamed from `⚙️ Filters` to `📈 Time Series Settings`
+- Borough filter label updated to `Filter by borough` for consistency
+- Added `.copy()` to avoid pandas `SettingWithCopyWarning`
+- Added `filtered["value"] > 0` to exclude negative and zero readings
+- Added `label` field to rush hour bands for tooltip context
+- Borough added to chart tooltip
+- WHO label text updated to `WHO guideline: {threshold} µg/m³`
+- Chart title updated to be more descriptive
+- Added `ℹ️ About this chart` expander explaining rush hour bands and WHO line
+- Summary table expanded with Min column, Borough grouping, and WHO exceedance flag
+- `st.caption()` added above summary table with context
+- Added `ℹ️ About this table` expander explaining each column
+- Borough column removed from summary table display with `.drop(columns=["Borough"])`

@@ -23,10 +23,13 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 
 ### 📈 Time Series
 - Hourly pollutant concentrations per station over the full dataset period
-- Rush hour bands annotated (07:00–09:00 and 17:00–19:00)
-- WHO guideline threshold line with label
-- Pollutant selector for NO₂, PM2.5, and PM10
-- Borough filter and peak readings summary table
+- Rush hour bands annotated (07:00–09:00 and 17:00–19:00) with tooltip labels
+- WHO annual guideline threshold line with label for direct health context
+- All six pollutants selectable (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Borough filter with all boroughs or single borough view
+- Borough added to chart tooltip for station identification
+- Summary table with Peak, Average, Min, Readings, and WHO exceedance flag per station
+- Collapsible **ℹ️ About** expanders below chart and summary table
 
 ### 🔥 Heatmap
 - Matrix of average pollutant concentration by station and hour of day

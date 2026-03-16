@@ -18,6 +18,21 @@ DATA_FILES = {
 STATIONS_FILE     = BASE_DIR / "data" / "processed" / "stations.csv"
 MEASUREMENTS_FILE = BASE_DIR / "data" / "processed" / "measurements.csv"
 
+BOROUGH_COLOURS = {
+    "Camden":        "#1f77b4",
+    "Greenwich":     "#2ca02c",
+    "Tower Hamlets": "#d62728",
+}
+
+WHO_THRESHOLDS = {
+    "NO2":  25,
+    "PM25": 15,
+    "PM10": 45,
+    "O3":   100,
+    "SO2":  40,
+    "CO":   None,
+}
+
 # ─────────────────────────── HELPERS ───────────────────────────────
 def load_json(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
@@ -81,7 +96,7 @@ def make_feature_collection_if_needed(data, name):
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_map():
 
-    # ─────────────────────────── LOAD BOROUGH GEOJSON ──────────────────
+    # ─────────────────────────── LOAD DATA ─────────────────────────
     borough_geojson = {}
     borough_coords  = {}
     missing_files   = []
@@ -95,7 +110,6 @@ def render_map():
         else:
             missing_files.append(str(filepath))
 
-    # ─────────────────────────── LOAD STATIONS ─────────────────────────
     stations_df      = pd.DataFrame()
     stations_missing = False
 
@@ -107,7 +121,7 @@ def render_map():
     else:
         stations_missing = True
 
-    # ─────────────────────────── TITLE ─────────────────────────────────
+    # ─────────────────────────── TITLE ─────────────────────────────
     st.markdown(
         """
         <style>
@@ -139,7 +153,7 @@ def render_map():
     if not borough_geojson:
         st.stop()
 
-    # ─────────────────────────── SIDEBAR ───────────────────────────────
+    # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("🗺️ Map Settings")
 
     tile_style = st.sidebar.selectbox(
@@ -173,7 +187,7 @@ def render_map():
     show_pollutants   = st.sidebar.checkbox("Show pollutants",          value=True)
     show_measurements = st.sidebar.checkbox("Show measurements",        value=True)
 
-    # ─────────────────────────── MAP SETUP ─────────────────────────────
+    # ─────────────────────────── MAP SETUP ─────────────────────────
     if selected_borough:
         map_coords             = borough_coords[selected_borough]
         center_lat, center_lon = get_center_from_coords(map_coords)
@@ -189,20 +203,14 @@ def render_map():
         tiles=tile_style,
     )
 
-    # ─────────────────────────── DRAW BOROUGHS ─────────────────────────
-    colour_map = {
-        "Tower Hamlets": "#d62728",
-        "Camden":        "#1f77b4",
-        "Greenwich":     "#2ca02c",
-    }
-
+    # ─────────────────────────── DRAW BOROUGHS ─────────────────────
     boroughs_to_draw = (
         [selected_borough] if selected_borough else list(borough_geojson.keys())
     )
 
     for borough in boroughs_to_draw:
         geojson_data = borough_geojson[borough]
-        base_colour  = colour_map.get(borough, "#444444")
+        base_colour  = BOROUGH_COLOURS.get(borough, "#444444")
         is_selected  = borough == selected_borough if selected_borough else True
 
         folium.GeoJson(
@@ -231,7 +239,7 @@ def render_map():
                 ),
             ).add_to(m)
 
-    # ─────────────────────────── DRAW STATIONS ─────────────────────────
+    # ─────────────────────────── DRAW STATIONS ─────────────────────
     if show_stations and not stations_df.empty:
         boroughs_to_filter = (
             [selected_borough] if selected_borough else list(borough_geojson.keys())
@@ -273,13 +281,13 @@ def render_map():
 
     folium.LayerControl().add_to(m)
 
-    # ─────────────────────────── RENDER MAP ────────────────────────────
+    # ─────────────────────────── RENDER MAP ────────────────────────
     st.subheader(
         f"📍 Map: {selected_borough}" if selected_borough else "📍 Map: All Boroughs"
     )
     st_folium(m, width=None, height=500, use_container_width=True)
 
-    # ─────────────────────────── SUMMARY ───────────────────────────────
+    # ─────────────────────────── BOROUGH SUMMARY ───────────────────
     st.divider()
     st.subheader("📌 Borough Summary")
     st.caption(
@@ -307,7 +315,7 @@ def render_map():
 
     st.dataframe(summary_rows, use_container_width=True)
 
-    # ─────────────────────────── POLLUTION CONTEXT ─────────────────────
+    # ─────────────────────────── POLLUTION CONTEXT ─────────────────
     st.divider()
     with st.expander("🏙️ London Air Pollution — Project Context", expanded=True):
         st.markdown("""
@@ -340,7 +348,7 @@ def render_map():
         levels across diverse residential communities.
         """)
 
-    # ─────────────────────────── STATIONS TABLE ────────────────────────
+    # ─────────────────────────── STATIONS TABLE ────────────────────
     if show_stations and not stations_df.empty:
         st.divider()
         st.subheader("📍 Monitoring Stations")
@@ -379,7 +387,7 @@ def render_map():
             essential for assessing the true health burden on local communities.
             """)
 
-    # ─────────────────────────── POLLUTANTS TABLE ──────────────────────
+    # ─────────────────────────── POLLUTANTS TABLE ──────────────────
     if show_pollutants and MEASUREMENTS_FILE.exists():
         st.divider()
         st.subheader("🧪 Pollutants in This Dataset")
@@ -424,14 +432,12 @@ def render_map():
             inactive or concentrations fell below instrument detection limits during the monitoring period.
             """)
 
-    # ─────────────────────────── MEASUREMENTS TABLE ────────────────────
+    # ─────────────────────────── MEASUREMENTS TABLE ────────────────
     if show_measurements and MEASUREMENTS_FILE.exists():
         measurements_df = pd.read_csv(MEASUREMENTS_FILE)
         measurements_df.columns = (
             measurements_df.columns.str.strip().str.lower().str.replace(" ", "_")
         )
-
-        # parse dates early for filtering
         measurements_df["measurement_date"] = pd.to_datetime(
             measurements_df["measurement_date"], errors="coerce"
         )
@@ -503,9 +509,8 @@ def render_map():
             ]
 
         if filtered_measurements.empty:
-            st.info("No measurements found for the selected filters.")
+            st.info("⚠️ No measurements found for the selected filters.")
         else:
-            # ── Group by day ────────────────────────────────────────
             filtered_measurements = filtered_measurements.copy()
             filtered_measurements["date"] = filtered_measurements["measurement_date"].dt.date
 
@@ -525,14 +530,14 @@ def render_map():
             )
 
             daily.columns = [
-                            "Borough", "Station Name", "Pollutant Code", "Pollutant Name", "Date",
-                            "Daily Mean (µg/m³)", "Daily Max (µg/m³)", "Daily Min (µg/m³)", "Readings",
-                        ]
+                "Borough", "Station Name", "Pollutant Code", "Pollutant Name", "Date",
+                "Daily Mean (µg/m³)", "Daily Max (µg/m³)", "Daily Min (µg/m³)", "Readings",
+            ]
 
-            daily = daily.drop(columns=["Borough", "Pollutant Name"])
+            daily = daily.drop(columns=["Borough", "Date", "Pollutant Name"])
+
             st.dataframe(daily, use_container_width=True)
 
-            # ── row count indicator ─────────────────────────────────
             st.caption(
                 f"Showing **{len(daily):,}** daily summaries across "
                 f"**{daily['Station Name'].nunique()}** station(s) and "
