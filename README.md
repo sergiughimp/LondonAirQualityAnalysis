@@ -59,11 +59,12 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 - Full station statistics table with WHO exceedance flag
 
 ### 📊 Correlation Analysis
-- Pollutant correlation heatmap with Pearson coefficients
-- Interactive scatter plot with x and y pollutant selectors
-- Colour-coded by borough
-- Full correlation matrix table
+- Pollutant correlation heatmap with Pearson coefficients — centred and enlarged for clarity
+- Correlation values displayed as bold text labels within each cell
+- Interactive scatter plot with x and y pollutant selectors, colour-coded by borough
+- Full correlation matrix table with contextual description
 - Borough filter in sidebar
+- Collapsible **ℹ️ About** expanders below all three sections with interpretation guidance
 
 ### 🏥 Health Impact
 - WHO exceedance hours per borough shown as grouped bar chart

@@ -293,3 +293,20 @@ Contains:
 - `st.caption()` added above every summary table with contextual description
 - `load_geo()` warning message updated to use `⚠️` prefix
 - Code style fully aligned across all four view mode functions
+
+### 25. Refactor and improve correlation analysis page
+- Replaced `st.write()` with `st.markdown()` for professional intro description
+- Removed unused `numpy` import
+- Added `df["value"] > 0` to exclude negative and zero readings
+- Sidebar header updated to `📊 Correlation Settings` for consistency
+- `st.caption()` added above all three sections with contextual descriptions
+- Correlation heatmap centred and enlarged using `st.columns([1, 3, 1])` with `width=500, height=500`
+- Heatmap text labels made bold and slightly larger for readability
+- `labelAngle=0` added to x-axis for cleaner label display
+- `⚠️` prefix added to all warning messages for consistency
+- `ℹ️ About this chart` expander added below correlation heatmap with detailed interpretation guidance
+- `ℹ️ About this chart` expander added below scatter plot with interpretation guidance
+- `ℹ️ About this table` expander added below correlation matrix table
+- Scatter plot warning message updated to reference specific pollutant names
+- Scatter plot tooltip updated to include units in label
+- Section title updated from `📋 Correlation Matrix` to `📋 Full Correlation Matrix`
