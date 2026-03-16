@@ -219,3 +219,23 @@ Contains:
   - Borough filter in sidebar
 - Removed 🎻 Violin Plot page
 - Updated sidebar navigation and page router in `streamlit_app.py`
+
+### 20. Add test suite
+- Created `tests/__init__.py`
+- Created `tests/test_data_pipeline.py` with 3 tests:
+  - `test_stations_file_exists` — checks stations.csv is created after processing
+  - `test_stations_has_required_columns` — checks all required columns are present
+  - `test_stations_not_empty` — checks stations.csv contains at least one row
+- Created `tests/test_data_quality.py` with 3 tests:
+  - `test_borough_names_valid` — checks only Camden, Greenwich, Tower Hamlets present
+  - `test_pollutant_codes_valid` — checks only known pollutant codes present
+  - `test_measurement_dates_parseable` — checks all dates parse without errors
+- Created `tests/test_analysis.py` with 3 tests:
+  - `test_who_thresholds_correct` — checks WHO thresholds match expected values
+  - `test_peak_value_matches_max` — checks peak calculation matches actual max
+  - `test_missing_rate_calculation` — checks missing rate is between 0 and 100
+- Created `tests/test_api.py` with 3 tests:
+  - `test_api_species_endpoint_reachable` — checks species endpoint returns 200
+  - `test_api_sites_endpoint_reachable` — checks sites endpoint returns 200
+  - `test_api_returns_json` — checks API response is a valid JSON object
+- Updated project structure in README.md to include all test files

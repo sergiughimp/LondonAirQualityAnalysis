@@ -99,6 +99,37 @@ streamlit run streamlit_app.py
 On first launch, if processed data is not found, the pipeline runs automatically.
 Use the **🔄 Refresh data** button in the sidebar to re-fetch and reprocess at any time.
 
+## Testing
+
+Run the full test suite from the project root:
+```bash
+pytest tests/ -v
+```
+
+The test suite covers four areas:
+
+**Data Pipeline** — `tests/test_data_pipeline.py`
+- Checks that `stations.csv` is created after processing
+- Validates all required columns are present
+- Confirms the file contains data
+
+**Data Quality** — `tests/test_data_quality.py`
+- Validates borough names are Camden, Greenwich, or Tower Hamlets only
+- Validates pollutant codes are within the known set (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Confirms all measurement dates can be parsed correctly
+
+**Analysis** — `tests/test_analysis.py`
+- Confirms WHO guideline thresholds are correct
+- Validates peak value calculations
+- Confirms missing data rate is within a valid range
+
+**API** — `tests/test_api.py`
+- Checks the LondonAir LAQN API species endpoint is reachable
+- Checks the monitoring sites endpoint is reachable
+- Confirms the API returns a valid JSON response
+
+> Note: run the app at least once to fetch and process the data before running the pipeline and data quality tests.
+
 ## Data Collection
 
 Air quality data is collected from the LondonAir (LAQN) API.
@@ -227,7 +258,11 @@ london-air-quality-analysis/
 │   └── project_plan.md
 │
 └── tests/
-    └── test_data_pipeline.py
+    ├── __init__.py
+    ├── test_data_pipeline.py
+    ├── test_data_quality.py
+    ├── test_analysis.py
+    └── test_api.py
 ```
 
 ## Data Source
