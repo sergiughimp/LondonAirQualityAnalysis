@@ -239,3 +239,14 @@ Contains:
   - `test_api_sites_endpoint_reachable` — checks sites endpoint returns 200
   - `test_api_returns_json` — checks API response is a valid JSON object
 - Updated project structure in README.md to include all test files
+
+### 21. Improve geospatial mapping measurements table
+- Measurements table now grouped by day showing Daily Mean, Daily Max, Daily Min and Readings count
+- Borough column added to daily summary table
+- Three inline filters added above the table — Filter by borough, Filter by pollutant, Filter by date
+- Date parsing moved before filters to support date filter dropdown
+- Empty filter result handled gracefully with info message
+- Row count caption added below table showing number of summaries, stations and pollutants visible
+- Negative values excluded from daily summaries
+- About expander updated to explain all columns and reflect daily summary format
+- Caption updated to describe daily summary format

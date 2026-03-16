@@ -15,6 +15,11 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 - Sidebar toggles for stations, pollutants, and measurements tables
 - Collapsible **ℹ️ About** descriptions below each table
 - London air pollution context with key hotspots and project relevance
+- Displays **air quality measurements** grouped by day below the map
+- Daily summary table showing Mean, Max, Min and hourly reading count per station and pollutant
+- Three inline filters — borough, pollutant, and date — to narrow down the measurements view
+- Row count indicator showing how many summaries are currently displayed
+- Toggle to show or hide measurements table
 
 ### 📈 Time Series
 - Hourly pollutant concentrations per station over the full dataset period
