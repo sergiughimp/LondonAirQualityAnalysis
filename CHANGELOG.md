@@ -310,3 +310,16 @@ Contains:
 - Scatter plot warning message updated to reference specific pollutant names
 - Scatter plot tooltip updated to include units in label
 - Section title updated from `📋 Correlation Matrix` to `📋 Full Correlation Matrix`
+
+### 26. Refactor and improve health impact page
+- Replaced `st.write()` with `st.markdown()` for professional intro description
+- Added `df["value"] > 0` to exclude negative and zero readings in data prep
+- `risk_level()` function moved to dedicated `# HELPERS` section
+- Sidebar header consistent with other pages
+- `st.caption()` added above both sections with contextual descriptions
+- Chart centred using `st.columns([0.1, 5, 0.1])`
+- `⚠️` prefix added to all warning messages for consistency
+- `ℹ️ About this chart` expander updated with WHO thresholds table and interpretation guidance
+- Borough column removed from both summary tables with `.drop(columns=["Borough"])`
+- `ℹ️ About these tables` expander updated with risk levels as a table instead of bullet list
+- Code style fully aligned across all sections

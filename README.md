@@ -67,11 +67,14 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 - Collapsible **ℹ️ About** expanders below all three sections with interpretation guidance
 
 ### 🏥 Health Impact
-- WHO exceedance hours per borough shown as grouped bar chart
+- WHO exceedance hours per borough shown as grouped bar chart faceted by borough
+- Chart centred on the page for consistent layout
 - Overall risk ranking per station based on average exceedance across all pollutants
 - Full exceedance breakdown table per station and pollutant
+- Borough column removed from tables for cleaner display
 - Risk levels: ✅ None, 🟡 Low, 🟠 Moderate, 🔴 High, 🚨 Very High
 - Borough filter in sidebar
+- Collapsible **ℹ️ About** expanders below chart and tables with WHO thresholds and interpretation guidance
 
 ### 📉 Missing Data Analysis
 - Impact on analysis section at the top explaining how gaps affect every other page
