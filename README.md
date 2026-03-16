@@ -33,9 +33,12 @@ It displays borough boundaries, monitoring stations, and pollution data across C
 
 ### 🔥 Heatmap
 - Matrix of average pollutant concentration by station and hour of day
-- Split into separate heatmaps per day
-- Pollutant selector for NO₂, PM2.5, and PM10
-- Borough filter and average summary table
+- Split into separate heatmaps per day for accurate temporal comparison
+- All six pollutants selectable (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Borough filter with all boroughs or single borough view
+- Dynamic chart height based on number of stations
+- Summary table with Average, Peak, Min, Readings, and WHO exceedance flag per station
+- Collapsible **ℹ️ About** expanders below chart and summary table
 
 ### 🗺️ Choropleth
 - Borough shading based on four view modes:

@@ -268,3 +268,20 @@ Contains:
 - `st.caption()` added above summary table with context
 - Added `ℹ️ About this table` expander explaining each column
 - Borough column removed from summary table display with `.drop(columns=["Borough"])`
+
+### 23. Refactor and improve heatmap page
+- Added all 6 pollutants to selector (NO₂, PM2.5, PM10, O₃, SO₂, CO)
+- Added `WHO_THRESHOLDS` and `BOROUGH_COLOURS` constants block at top of file
+- Replaced `st.write()` with `st.markdown()` for professional intro description
+- Sidebar header renamed from `⚙️ Filters` to `🔥 Heatmap Settings`
+- Borough filter label updated to `Filter by borough` for consistency
+- Added `.copy()` to avoid pandas `SettingWithCopyWarning`
+- Added `filtered["value"] > 0` to exclude negative and zero readings
+- Chart height made dynamic based on number of stations
+- `labelLimit=0` added to y-axis so all station names display fully
+- Added `ℹ️ About this chart` expander explaining how to read the heatmap
+- Summary table expanded with Peak, Min, Readings, and WHO exceedance flag
+- `st.caption()` added above summary table with context
+- Borough column removed from summary table display with `.drop(columns=["Borough"])`
+- Added `ℹ️ About this table` expander explaining each column
+- Code style aligned with `geospatial_mapping.py` and `time_series.py`
