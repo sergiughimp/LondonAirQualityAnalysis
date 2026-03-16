@@ -47,7 +47,9 @@ It displays borough boundaries, monitoring stations, and pollution data across C
   - 📅 Day-by-day — date slider to step through daily averages
   - 📊 vs London average — deviation from overall average across all boroughs
 - All six pollutants selectable (NO₂, PM2.5, PM10, O₃, SO₂, CO)
-- WHO threshold status shown in summary tables
+- WHO threshold status shown in all summary tables
+- `st.caption()` added above each summary table with contextual description
+- Collapsible **ℹ️ About** expanders for each view mode with pollutant-specific guidance
 
 ### 📦 Box Plot
 - Distribution of hourly readings per station, colour-coded by borough

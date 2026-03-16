@@ -284,4 +284,12 @@ Contains:
 - `st.caption()` added above summary table with context
 - Borough column removed from summary table display with `.drop(columns=["Borough"])`
 - Added `ℹ️ About this table` expander explaining each column
-- Code style aligned with `geospatial_mapping.py` and `time_series.py`
+
+### 24. Refactor and improve choropleth page
+- Added `st.markdown()` intro to `render_choropleth()` explaining the four view modes
+- Added `⚠️` prefix to all warning messages for consistency
+- Subheaders updated with `📍` emoji for all map sections
+- `ℹ️ About this view` expanders moved above summary tables with richer pollutant-specific descriptions
+- `st.caption()` added above every summary table with contextual description
+- `load_geo()` warning message updated to use `⚠️` prefix
+- Code style fully aligned across all four view mode functions
