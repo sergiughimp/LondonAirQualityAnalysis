@@ -260,10 +260,13 @@ london-air-quality-analysis/
 │   │
 │   ├── analysis/
 │   │   ├── __init__.py
+|   │   ├── constants.py
 │   │   ├── time_series.py
 │   │   ├── heatmap.py
 │   │   ├── choropleth.py
 │   │   ├── box_plot.py
+|   │   ├── correlation.py
+|   │   ├── health_impact.py
 │   │   └── missing_data.py
 │   │
 │   └── visualization/

@@ -1,24 +1,7 @@
 import pandas as pd
 import altair as alt
 import streamlit as st
-
-# ─────────────────────────── CONSTANTS ─────────────────────────────
-POLLUTANTS = {
-    "NO₂ — Nitrogen Dioxide":         "NO2",
-    "PM2.5 — Particulate Matter 2.5": "PM25",
-    "PM10 — Particulate Matter 10":   "PM10",
-    "O₃ — Ozone":                     "O3",
-    "SO₂ — Sulphur Dioxide":          "SO2",
-    "CO — Carbon Monoxide":           "CO",
-}
-
-BOROUGH_COLOURS = {
-    "Camden":        "#1f77b4",
-    "Greenwich":     "#2ca02c",
-    "Tower Hamlets": "#d62728",
-}
-
-BOROUGHS = ["Camden", "Greenwich", "Tower Hamlets"]
+from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_correlation(measurements_df: pd.DataFrame):

@@ -331,3 +331,20 @@ Contains:
 - `ℹ️ About this chart` expanders rewritten for all three charts with `How to read` and `Interpretation guidance` sections
 - `ℹ️ About this table` expander updated with status flags as a table instead of bullet list
 - Borough column removed from summary table with `.drop(columns=["Borough"])`
+
+### 28. Extract shared constants into a single module
+- Created `src/analysis/constants.py` with all shared constants:
+  - `POLLUTANTS` — all six pollutant codes and display names
+  - `WHO_THRESHOLDS` — WHO annual mean guideline thresholds per pollutant
+  - `BOROUGH_COLOURS` — consistent colour mapping per borough
+  - `BOROUGHS` — ordered list of the three target boroughs
+- Removed repeated constants blocks from all analysis files
+- Added single import line to each analysis file:
+  - `src/analysis/time_series.py`
+  - `src/analysis/heatmap.py`
+  - `src/analysis/choropleth.py`
+  - `src/analysis/box_plot.py`
+  - `src/analysis/correlation.py`
+  - `src/analysis/health_impact.py`
+  - `src/analysis/missing_data.py`
+- Cleared `src/analysis/__init__.py` to avoid circular import issues
