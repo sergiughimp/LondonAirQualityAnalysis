@@ -160,18 +160,7 @@ Contains:
 - Added summary table below each map view
 - Added collapsible `ℹ️ About` expander below each view
 
-### 15. Add box plot page
-- Created `src/analysis/box_plot.py` with `render_box_plot()` function
-- Manual box plot built with Altair using whisker, IQR box, and median tick layers
-- Dynamically filters to the 3 pollutants with the most valid readings
-- Borough filter selectbox with "All boroughs" option
-- WHO guideline threshold line with label for each pollutant
-- Full station labels shown with `labelLimit=0` and angled axis
-- Summary statistics table below chart showing Min, Q1, Median, Q3, Max, Mean, Std Dev
-- WHO exceedance flag per station in summary table
-- Collapsible `ℹ️ About` expander explaining how to read the chart
-
-### 16. Add missing data analysis page
+### 15. Add missing data analysis page
 - Created `src/analysis/missing_data.py` with `render_missing_data()` function
 - Impact on analysis expander at the top of the page explaining how missing data
   affects time series, heatmap, choropleth, and box plot pages
@@ -185,7 +174,7 @@ Contains:
 - Borough filter with all boroughs or single borough view
 - Collapsible `ℹ️ About` expander below each visualisation
 
-### 17. Refactor app.py structure
+### 16. Refactor app.py structure
 - Added automatic data pipeline on first launch if processed data is missing
 - Added `run_pipeline()` function to run fetch and process scripts sequentially with spinners
 - Added `data_is_ready()` helper to check if processed data exists
@@ -197,7 +186,7 @@ Contains:
 - Added 🔄 Refresh data button in sidebar under Data Management section
 - File paths consolidated into `DATA_DIR` and `PROCESSING_DIR` constants
 
-### 18. Add dynamic date range selection
+### 17. Add dynamic date range selection
 - Removed hardcoded `START` and `END` dates from `fetch_air_quality_data.py`
 - Added `argparse` to `fetch_air_quality_data.py` with `--start` and `--end` arguments
 - Updated `run_pipeline()` in `app.py` to accept and pass `start_date` and `end_date`
@@ -205,7 +194,7 @@ Contains:
 - Replaced automatic pipeline on first launch with manual **🔄 Fetch data** button
 - App now prompts user to select a date range before fetching data
 
-### 19. Add Health Impact and Correlation Analysis pages
+### 18. Add Health Impact and Correlation Analysis pages
 - Created `src/analysis/health_impact.py` with `render_health_impact()` function
   - WHO exceedance hours per borough shown as grouped bar chart
   - Overall risk ranking per station based on average exceedance across all pollutants
@@ -220,7 +209,7 @@ Contains:
 - Removed 🎻 Violin Plot page
 - Updated sidebar navigation and page router in `streamlit_app.py`
 
-### 20. Add test suite
+### 19. Add test suite
 - Created `tests/__init__.py`
 - Created `tests/test_data_pipeline.py` with 3 tests:
   - `test_stations_file_exists` — checks stations.csv is created after processing
@@ -240,7 +229,7 @@ Contains:
   - `test_api_returns_json` — checks API response is a valid JSON object
 - Updated project structure in README.md to include all test files
 
-### 21. Improve geospatial mapping measurements table
+### 20. Improve geospatial mapping measurements table
 - Measurements table now grouped by day showing Daily Mean, Daily Max, Daily Min and Readings count
 - Borough column added to daily summary table
 - Three inline filters added above the table — Filter by borough, Filter by pollutant, Filter by date
@@ -251,7 +240,7 @@ Contains:
 - About expander updated to explain all columns and reflect daily summary format
 - Caption updated to describe daily summary format
 
-### 22. Refactor and improve time series page
+### 21. Refactor and improve time series page
 - Added all 6 pollutants to selector (NO₂, PM2.5, PM10, O₃, SO₂, CO)
 - Added `WHO_THRESHOLDS` and `BOROUGH_COLOURS` constants block at top of file
 - Replaced `st.write()` with `st.markdown()` for professional intro description
@@ -269,7 +258,7 @@ Contains:
 - Added `ℹ️ About this table` expander explaining each column
 - Borough column removed from summary table display with `.drop(columns=["Borough"])`
 
-### 23. Refactor and improve heatmap page
+### 22. Refactor and improve heatmap page
 - Added all 6 pollutants to selector (NO₂, PM2.5, PM10, O₃, SO₂, CO)
 - Added `WHO_THRESHOLDS` and `BOROUGH_COLOURS` constants block at top of file
 - Replaced `st.write()` with `st.markdown()` for professional intro description
@@ -285,7 +274,7 @@ Contains:
 - Borough column removed from summary table display with `.drop(columns=["Borough"])`
 - Added `ℹ️ About this table` expander explaining each column
 
-### 24. Refactor and improve choropleth page
+### 23. Refactor and improve choropleth page
 - Added `st.markdown()` intro to `render_choropleth()` explaining the four view modes
 - Added `⚠️` prefix to all warning messages for consistency
 - Subheaders updated with `📍` emoji for all map sections
@@ -294,7 +283,7 @@ Contains:
 - `load_geo()` warning message updated to use `⚠️` prefix
 - Code style fully aligned across all four view mode functions
 
-### 25. Refactor and improve correlation analysis page
+### 24. Refactor and improve correlation analysis page
 - Replaced `st.write()` with `st.markdown()` for professional intro description
 - Removed unused `numpy` import
 - Added `df["value"] > 0` to exclude negative and zero readings
@@ -311,7 +300,7 @@ Contains:
 - Scatter plot tooltip updated to include units in label
 - Section title updated from `📋 Correlation Matrix` to `📋 Full Correlation Matrix`
 
-### 26. Refactor and improve health impact page
+### 25. Refactor and improve health impact page
 - Replaced `st.write()` with `st.markdown()` for professional intro description
 - Added `df["value"] > 0` to exclude negative and zero readings in data prep
 - `risk_level()` function moved to dedicated `# HELPERS` section
@@ -323,7 +312,7 @@ Contains:
 - Borough column removed from both summary tables with `.drop(columns=["Borough"])`
 - `ℹ️ About these tables` expander updated with risk levels as a table instead of bullet list
 
-### 27. Refactor and improve missing data page
+### 26. Refactor and improve missing data page
 - Replaced `st.write()` with `st.markdown()` for professional intro description
 - Added `⚠️` prefix to warning message for consistency
 - `st.caption()` added above all four sections with contextual descriptions
@@ -332,7 +321,7 @@ Contains:
 - `ℹ️ About this table` expander updated with status flags as a table instead of bullet list
 - Borough column removed from summary table with `.drop(columns=["Borough"])`
 
-### 28. Extract shared constants into a single module
+### 27. Extract shared constants into a single module
 - Created `src/analysis/constants.py` with all shared constants:
   - `POLLUTANTS` — all six pollutant codes and display names
   - `WHO_THRESHOLDS` — WHO annual mean guideline thresholds per pollutant
@@ -343,29 +332,27 @@ Contains:
   - `src/analysis/time_series.py`
   - `src/analysis/heatmap.py`
   - `src/analysis/choropleth.py`
-  - `src/analysis/box_plot.py`
   - `src/analysis/correlation.py`
   - `src/analysis/health_impact.py`
   - `src/analysis/missing_data.py`
 - Cleared `src/analysis/__init__.py` to avoid circular import issues
 
-### 29. Extract shared utilities into common.py
+### 28. Extract shared utilities into common.py
  
 - Created `src/analysis/common.py` with four shared helpers:
   - `prepare_measurements(df)` — normalises columns, coerces types, filters `value > 0`
   - `load_and_normalise_csv(filepath)` — reads a CSV and normalises column names
   - `sidebar_borough_filter()` — renders borough selectbox, returns filtered borough list
   - `sidebar_pollutant_selector()` — renders pollutant selectbox, returns `(label, code, threshold)`
-- Removed duplicated data prep blocks from `time_series`, `heatmap`, `correlation`, `health_impact`, and `box_plot`
+- Removed duplicated data prep blocks from `time_series`, `heatmap`, `correlation` and `health_impact`
 - Replaced repeated borough sidebar pattern across all analysis modules with `sidebar_borough_filter()`
 - Replaced repeated pollutant sidebar pattern with `sidebar_pollutant_selector()` in `time_series`, `heatmap`, `choropleth`, and `missing_data`
 - Removed duplicate `BOROUGH_COLOURS` and `WHO_THRESHOLDS` definitions from `geospatial_mapping.py`
 - Removed unused `from datetime import date` import from `app.py`
 - Deduplicated `load_measurements()` calls in `app.py` — computed once per page render
 - Fixed stale `selected_borough` reference in `time_series.py` — replaced with `borough_filter`
-- Added comments in `missing_data.py`, `choropleth.py`, and `box_plot.py` explaining why `prepare_measurements()` and `sidebar_pollutant_selector()` are intentionally not used in those files
+- Added comments in `missing_data.py` and `choropleth.py` explaining why `prepare_measurements()` and `sidebar_pollutant_selector()` are intentionally not used in those files
 - Fixed `streamlit run streamlit_app.py` to `streamlit run app.py` in README
 - Fixed raw file path reference from `air_quality_3_days.json` to `air_quality.json` in README
 - Added Shared Utilities section to README documenting `common.py` helpers
 - Added `common.py` to project structure tree in README
- 
