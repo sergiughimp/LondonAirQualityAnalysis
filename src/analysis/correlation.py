@@ -2,6 +2,19 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
+from src.analysis.common import prepare_measurements, sidebar_borough_filter
+
+# ─────────────────────────── HELPERS ───────────────────────────────
+def pivot_pollutants(df, index_cols):
+    return (
+        df.pivot_table(
+            index=index_cols,
+            columns="pollutant_code",
+            values="value",
+            aggfunc="mean",
+        )
+        .reset_index()
+    )
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_correlation(measurements_df: pd.DataFrame):
@@ -16,34 +29,17 @@ def render_correlation(measurements_df: pd.DataFrame):
         """
     )
 
-    # ─────────────────────────── DATA PREP ─────────────────────────
-    df = measurements_df.copy()
-    df.columns             = df.columns.str.strip().str.lower().str.replace(" ", "_")
-    df["value"]            = pd.to_numeric(df["value"], errors="coerce")
-    df["measurement_date"] = pd.to_datetime(df["measurement_date"], errors="coerce")
-    df                     = df[df["value"] > 0]
+    # ─────────────────────────── DATA PREP & SIDEBAR ───────────────
+    df = prepare_measurements(measurements_df)
 
-    # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("📊 Correlation Settings")
+    borough_filter = sidebar_borough_filter()
 
-    borough_options   = ["All boroughs"] + BOROUGHS
-    borough_selection = st.sidebar.selectbox(
-        "Filter by borough", borough_options, index=0
-    )
-    borough_filter = BOROUGHS if borough_selection == "All boroughs" else [borough_selection]
-
-    # ─────────────────────────── FILTER DATA ───────────────────────
-    filtered = df[df["borough"].isin(borough_filter)]
-
-    wide = filtered.pivot_table(
-        index=["station_name", "measurement_date"],
-        columns="pollutant_code",
-        values="value",
-        aggfunc="mean",
-    ).reset_index()
-
+    # ─────────────────────────── FILTER + PIVOT ────────────────────
+    filtered      = df[df["borough"].isin(borough_filter)]
+    wide          = pivot_pollutants(filtered, ["station_name", "measurement_date"])
     pollutant_cols = [c for c in wide.columns if c in POLLUTANTS.values()]
-    wide = wide[["station_name"] + pollutant_cols].dropna(how="all", subset=pollutant_cols)
+    wide          = wide[["station_name"] + pollutant_cols].dropna(how="all", subset=pollutant_cols)
 
     if wide.empty or len(pollutant_cols) < 2:
         st.warning("⚠️ Not enough data to compute correlations. Try selecting a different borough.")
@@ -59,9 +55,8 @@ def render_correlation(measurements_df: pd.DataFrame):
     )
 
     corr      = wide[pollutant_cols].corr().round(2)
-    corr_long = (
-        corr.reset_index()
-        .melt(id_vars="pollutant_code", var_name="pollutant_y", value_name="correlation")
+    corr_long = corr.reset_index().melt(
+        id_vars="pollutant_code", var_name="pollutant_y", value_name="correlation"
     )
 
     heatmap = alt.Chart(corr_long).mark_rect().encode(
@@ -90,7 +85,6 @@ def render_correlation(measurements_df: pd.DataFrame):
         ),
     )
 
-    # centre the heatmap using columns
     col_left, col_center, col_right = st.columns([1, 3, 1])
     with col_center:
         st.altair_chart(heatmap + text, use_container_width=True)
@@ -129,20 +123,18 @@ def render_correlation(measurements_df: pd.DataFrame):
     with col1:
         x_label = st.selectbox("X axis pollutant", available, index=0)
     with col2:
-        y_label = st.selectbox(
-            "Y axis pollutant", available, index=1 if len(available) > 1 else 0
-        )
+        y_label = st.selectbox("Y axis pollutant", available, index=1 if len(available) > 1 else 0)
 
     x_code = POLLUTANTS[x_label]
     y_code = POLLUTANTS[y_label]
 
-    scatter_df   = filtered[filtered["pollutant_code"].isin([x_code, y_code])]
-    scatter_wide = scatter_df.pivot_table(
-        index=["station_name", "borough", "measurement_date"],
-        columns="pollutant_code",
-        values="value",
-        aggfunc="mean",
-    ).reset_index().dropna(subset=[x_code, y_code])
+    scatter_wide = (
+        pivot_pollutants(
+            filtered[filtered["pollutant_code"].isin([x_code, y_code])],
+            ["station_name", "borough", "measurement_date"],
+        )
+        .dropna(subset=[x_code, y_code])
+    )
 
     if scatter_wide.empty:
         st.warning(
@@ -150,19 +142,12 @@ def render_correlation(measurements_df: pd.DataFrame):
             f"Try a different pollutant combination."
         )
     else:
-        colour_scale = alt.Scale(
-            domain=BOROUGHS,
-            range=list(BOROUGH_COLOURS.values()),
-        )
-
-        scatter = alt.Chart(scatter_wide).mark_circle(
-            opacity=0.6, size=60,
-        ).encode(
+        scatter = alt.Chart(scatter_wide).mark_circle(opacity=0.6, size=60).encode(
             x=alt.X(f"{x_code}:Q", title=f"{x_code} (µg/m³)"),
             y=alt.Y(f"{y_code}:Q", title=f"{y_code} (µg/m³)"),
             color=alt.Color(
                 "borough:N",
-                scale=colour_scale,
+                scale=alt.Scale(domain=BOROUGHS, range=list(BOROUGH_COLOURS.values())),
                 legend=alt.Legend(title="Borough"),
             ),
             tooltip=[

@@ -2,6 +2,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
+from src.analysis.common import prepare_measurements, sidebar_borough_filter, sidebar_pollutant_selector
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_heatmap(df: pd.DataFrame):
@@ -16,32 +17,22 @@ def render_heatmap(df: pd.DataFrame):
     )
 
     # ─────────────────────────── DATA PREP ─────────────────────────
-    df = df.copy()
-    df.columns             = df.columns.str.strip().str.lower().str.replace(" ", "_")
-    df["measurement_date"] = pd.to_datetime(df["measurement_date"], errors="coerce")
-    df["value"]            = pd.to_numeric(df["value"], errors="coerce")
-    df["hour"]             = df["measurement_date"].dt.hour
-    df["date"]             = df["measurement_date"].dt.date.astype(str)
+    df = prepare_measurements(df)
+    df["hour"] = df["measurement_date"].dt.hour
+    df["date"] = df["measurement_date"].dt.date.astype(str)
 
     # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("🔥 Heatmap Settings")
-
-    selected_pollutant_label = st.sidebar.selectbox(
-        "Pollutant", list(POLLUTANTS.keys()), index=0
-    )
-    selected_pollutant_code = POLLUTANTS[selected_pollutant_label]
-    threshold               = WHO_THRESHOLDS.get(selected_pollutant_code)
-
-    boroughs         = ["All boroughs"] + sorted(df["borough"].dropna().unique().tolist())
-    selected_borough = st.sidebar.selectbox("Filter by borough", boroughs, index=0)
+    selected_pollutant_label, selected_pollutant_code, threshold = sidebar_pollutant_selector()
+    borough_filter = sidebar_borough_filter()
 
     # ─────────────────────────── FILTER DATA ───────────────────────
-    filtered = df[df["pollutant_code"] == selected_pollutant_code].copy()
-    filtered = filtered.dropna(subset=["value"])
-    filtered = filtered[filtered["value"] > 0]
-
-    if selected_borough != "All boroughs":
-        filtered = filtered[filtered["borough"] == selected_borough]
+    filtered = df[
+        (df["pollutant_code"] == selected_pollutant_code) &
+        (df["value"].notna()) &
+        (df["value"] > 0) &
+        (df["borough"].isin(borough_filter))
+    ].copy()
 
     if filtered.empty:
         st.warning(
@@ -63,17 +54,11 @@ def render_heatmap(df: pd.DataFrame):
     )
 
     # ─────────────────────────── HEATMAP CHARTS ────────────────────
-    dates = sorted(heatmap_df["date"].unique().tolist())
-
-    for day in dates:
+    for day in sorted(heatmap_df["date"].unique()):
         day_df = heatmap_df[heatmap_df["date"] == day]
 
         chart = alt.Chart(day_df).mark_rect().encode(
-            x=alt.X(
-                "hour:O",
-                title="Hour of Day",
-                axis=alt.Axis(labelAngle=0),
-            ),
+            x=alt.X("hour:O", title="Hour of Day", axis=alt.Axis(labelAngle=0)),
             y=alt.Y(
                 "station_name:N",
                 title="Station",
@@ -131,12 +116,7 @@ def render_heatmap(df: pd.DataFrame):
 
     summary = (
         filtered.groupby(["borough", "station_name"])["value"]
-        .agg(
-            Average="mean",
-            Peak="max",
-            Min="min",
-            Readings="count",
-        )
+        .agg(Average="mean", Peak="max", Min="min", Readings="count")
         .round(2)
         .reset_index()
         .rename(columns={
@@ -158,19 +138,18 @@ def render_heatmap(df: pd.DataFrame):
     st.dataframe(summary, use_container_width=True)
 
     with st.expander("ℹ️ About this table", expanded=False):
+        above_who_line = (
+            f"- **Above WHO** — flags stations where the peak reading exceeded "
+            f"the WHO guideline of **{threshold} µg/m³** for {pollutant_short}\n\n"
+            "Stations marked **⚠️ Yes** recorded at least one hour where pollution "
+            "exceeded the recommended safe limit — indicating a potential health risk "
+            "for residents and commuters near that location."
+            if threshold else ""
+        )
         st.markdown(f"""
         - **Average** — mean concentration across all valid hourly readings for this station
         - **Peak** — the single highest hourly reading recorded for this station
         - **Min** — the lowest valid hourly reading recorded
         - **Readings** — total number of valid hourly readings included in the summary
-        {f'- **Above WHO** — flags stations where the peak reading exceeded the WHO guideline of **{threshold} µg/m³** for {pollutant_short}' if threshold else ''}
-
-        Stations marked **⚠️ Yes** recorded at least one hour where pollution
-        exceeded the recommended safe limit — indicating a potential health risk
-        for residents and commuters near that location.
-        """ if threshold else """
-        - **Average** — mean concentration across all valid hourly readings for this station
-        - **Peak** — the single highest hourly reading recorded for this station
-        - **Min** — the lowest valid hourly reading recorded
-        - **Readings** — total number of valid hourly readings included in the summary
+        {above_who_line}
         """)

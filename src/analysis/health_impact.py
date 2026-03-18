@@ -2,14 +2,49 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
+from src.analysis.common import prepare_measurements, sidebar_borough_filter
 
 # ─────────────────────────── HELPERS ───────────────────────────────
 def risk_level(pct: float) -> str:
-    if pct == 0:     return "✅ None"
-    elif pct <= 10:  return "🟡 Low"
-    elif pct <= 30:  return "🟠 Moderate"
-    elif pct <= 60:  return "🔴 High"
-    else:            return "🚨 Very High"
+    if pct == 0:    return "✅ None"
+    elif pct <= 10: return "🟡 Low"
+    elif pct <= 30: return "🟠 Moderate"
+    elif pct <= 60: return "🔴 High"
+    else:           return "🚨 Very High"
+
+def pct_exceeded(df_slice, threshold):
+    total    = len(df_slice)
+    exceeded = len(df_slice[df_slice["value"] > threshold])
+    return round((exceeded / total * 100), 1) if total > 0 else 0, exceeded, total
+
+def compute_exceedance(df, borough_filter):
+    """Yield one dict per (pollutant, borough, station) combination."""
+    for pollutant_code, threshold in WHO_THRESHOLDS.items():
+        if threshold is None:
+            continue
+        pol_df = df[
+            (df["pollutant_code"] == pollutant_code) &
+            (df["value"].notna()) &
+            (df["borough"].isin(borough_filter))
+        ]
+        if pol_df.empty:
+            continue
+        for borough in borough_filter:
+            b_df = pol_df[pol_df["borough"] == borough]
+            if b_df.empty:
+                continue
+            for station in b_df["station_name"].unique():
+                s_df = b_df[b_df["station_name"] == station]
+                pct, exceeded, total = pct_exceeded(s_df, threshold)
+                yield {
+                    "borough":        borough,
+                    "station_name":   station,
+                    "pollutant_code": pollutant_code,
+                    "total_hours":    total,
+                    "exceeded_hours": exceeded,
+                    "pct_exceeded":   pct,
+                    "risk":           risk_level(pct),
+                }
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_health_impact(measurements_df: pd.DataFrame):
@@ -23,21 +58,15 @@ def render_health_impact(measurements_df: pd.DataFrame):
         """
     )
 
-    # ─────────────────────────── DATA PREP ─────────────────────────
-    df = measurements_df.copy()
-    df.columns             = df.columns.str.strip().str.lower().str.replace(" ", "_")
-    df["value"]            = pd.to_numeric(df["value"], errors="coerce")
-    df["measurement_date"] = pd.to_datetime(df["measurement_date"], errors="coerce")
-    df                     = df[df["value"] > 0]
+    # ─────────────────────────── DATA PREP & SIDEBAR ───────────────
+    df = prepare_measurements(measurements_df)
 
-    # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("🏥 Health Impact Settings")
+    borough_filter = sidebar_borough_filter()
 
-    borough_options   = ["All boroughs"] + BOROUGHS
-    borough_selection = st.sidebar.selectbox(
-        "Filter by borough", borough_options, index=0
-    )
-    borough_filter = BOROUGHS if borough_selection == "All boroughs" else [borough_selection]
+    # ─────────────────────────── COMPUTE ONCE ──────────────────────
+    all_rows = list(compute_exceedance(df, borough_filter))
+    full_df  = pd.DataFrame(all_rows)
 
     # ─────────────────────────── WHO EXCEEDANCE ────────────────────
     st.divider()
@@ -48,62 +77,26 @@ def render_health_impact(measurements_df: pd.DataFrame):
         "recorded during the monitoring period."
     )
 
-    exceedance_rows = []
-    for pollutant_code, threshold in WHO_THRESHOLDS.items():
-        if threshold is None:
-            continue
-
-        pol_df = df[
-            (df["pollutant_code"] == pollutant_code) &
-            (df["value"].notna()) &
-            (df["borough"].isin(borough_filter))
-        ]
-        if pol_df.empty:
-            continue
-
-        for borough in borough_filter:
-            b_df        = pol_df[pol_df["borough"] == borough]
-            total_hours = len(b_df)
-            exceeded    = len(b_df[b_df["value"] > threshold])
-            pct         = round((exceeded / total_hours * 100), 1) if total_hours > 0 else 0
-            exceedance_rows.append({
-                "borough":        borough,
-                "pollutant_code": pollutant_code,
-                "total_hours":    total_hours,
-                "exceeded_hours": exceeded,
-                "pct_exceeded":   pct,
-                "risk":           risk_level(pct),
-            })
-
-    exceedance_df = pd.DataFrame(exceedance_rows)
-
-    if exceedance_df.empty:
+    if full_df.empty:
         st.warning("⚠️ No exceedance data available for the selected borough.")
     else:
-        colour_scale = alt.Scale(
-            domain=BOROUGHS,
-            range=list(BOROUGH_COLOURS.values()),
+        exceedance_df = (
+            full_df.groupby(["borough", "pollutant_code"])
+            .agg(total_hours=("total_hours", "sum"), exceeded_hours=("exceeded_hours", "sum"))
+            .reset_index()
         )
+        exceedance_df["pct_exceeded"] = (
+            exceedance_df["exceeded_hours"] / exceedance_df["total_hours"] * 100
+        ).round(1)
+        exceedance_df["risk"] = exceedance_df["pct_exceeded"].apply(risk_level)
+
+        colour_scale = alt.Scale(domain=BOROUGHS, range=list(BOROUGH_COLOURS.values()))
 
         bar = alt.Chart(exceedance_df).mark_bar().encode(
-            x=alt.X(
-                "pollutant_code:N",
-                title="Pollutant",
-                axis=alt.Axis(labelAngle=0),
-            ),
-            y=alt.Y(
-                "pct_exceeded:Q",
-                title="% Hours Above WHO Limit",
-            ),
-            color=alt.Color(
-                "borough:N",
-                scale=colour_scale,
-                legend=alt.Legend(title="Borough"),
-            ),
-            column=alt.Column(
-                "borough:N",
-                title="Borough",
-            ),
+            x=alt.X("pollutant_code:N", title="Pollutant", axis=alt.Axis(labelAngle=0)),
+            y=alt.Y("pct_exceeded:Q",   title="% Hours Above WHO Limit"),
+            color=alt.Color("borough:N", scale=colour_scale, legend=alt.Legend(title="Borough")),
+            column=alt.Column("borough:N", title="Borough"),
             tooltip=[
                 alt.Tooltip("borough:N",        title="Borough"),
                 alt.Tooltip("pollutant_code:N", title="Pollutant"),
@@ -153,40 +146,19 @@ def render_health_impact(measurements_df: pd.DataFrame):
         "The full breakdown shows which specific pollutant is driving the risk at each location."
     )
 
-    station_rows = []
-    for pollutant_code, threshold in WHO_THRESHOLDS.items():
-        if threshold is None:
-            continue
-
-        pol_df = df[
-            (df["pollutant_code"] == pollutant_code) &
-            (df["value"].notna()) &
-            (df["borough"].isin(borough_filter))
-        ]
-        if pol_df.empty:
-            continue
-
-        for station in pol_df["station_name"].unique():
-            s_df     = pol_df[pol_df["station_name"] == station]
-            borough  = s_df["borough"].iloc[0]
-            total    = len(s_df)
-            exceeded = len(s_df[s_df["value"] > threshold])
-            pct      = round((exceeded / total * 100), 1) if total > 0 else 0
-            station_rows.append({
-                "Borough":        borough,
-                "Station":        station,
-                "Pollutant":      pollutant_code,
-                "Total Hours":    total,
-                "Hours Exceeded": exceeded,
-                "% Exceeded":     pct,
-                "Risk Level":     risk_level(pct),
-            })
-
-    station_df = pd.DataFrame(station_rows)
-
-    if station_df.empty:
+    if full_df.empty:
         st.warning("⚠️ No station data available for the selected borough.")
     else:
+        station_df = full_df.rename(columns={
+            "borough":        "Borough",
+            "station_name":   "Station",
+            "pollutant_code": "Pollutant",
+            "total_hours":    "Total Hours",
+            "exceeded_hours": "Hours Exceeded",
+            "pct_exceeded":   "% Exceeded",
+            "risk":           "Risk Level",
+        })
+
         risk_score = (
             station_df.groupby(["Borough", "Station"])["% Exceeded"]
             .mean()
@@ -198,16 +170,11 @@ def render_health_impact(measurements_df: pd.DataFrame):
         risk_score["Overall Risk"] = risk_score["Avg % Exceeded"].apply(risk_level)
 
         st.markdown("#### 🏆 Overall Risk Ranking")
-        st.dataframe(
-            risk_score.drop(columns=["Borough"]),
-            use_container_width=True,
-        )
+        st.dataframe(risk_score.drop(columns=["Borough"]), use_container_width=True)
 
         st.markdown("#### 📋 Full Exceedance Breakdown by Station and Pollutant")
         st.dataframe(
-            station_df
-            .drop(columns=["Borough"])
-            .sort_values(["% Exceeded"], ascending=False),
+            station_df.drop(columns=["Borough"]).sort_values("% Exceeded", ascending=False),
             use_container_width=True,
         )
 

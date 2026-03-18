@@ -2,6 +2,15 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
+from src.analysis.common import sidebar_borough_filter, sidebar_pollutant_selector
+
+# ─────────────────────────── HELPERS ───────────────────────────────
+def missing_pct_df(df, group_cols):
+    """Group by group_cols, compute missing rate and % missing."""
+    out = df.groupby(group_cols)["is_missing"].mean().reset_index()
+    out.columns        = group_cols + ["missing_rate"]
+    out["missing_pct"] = (out["missing_rate"] * 100).round(1)
+    return out
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_missing_data(measurements_df: pd.DataFrame):
@@ -53,6 +62,7 @@ def render_missing_data(measurements_df: pd.DataFrame):
         """)
 
     # ─────────────────────────── DATA PREP ─────────────────────────
+    # Note: intentionally does NOT filter out value <= 0 — those are tracked as missing
     df = measurements_df.copy()
     df.columns             = df.columns.str.strip().str.lower().str.replace(" ", "_")
     df["value"]            = pd.to_numeric(df["value"], errors="coerce")
@@ -63,17 +73,8 @@ def render_missing_data(measurements_df: pd.DataFrame):
 
     # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("📉 Missing Data Settings")
-
-    pollutant_label = st.sidebar.selectbox(
-        "Pollutant", list(POLLUTANTS.keys()), index=0
-    )
-    pollutant_code = POLLUTANTS[pollutant_label]
-
-    borough_options   = ["All boroughs"] + BOROUGHS
-    borough_selection = st.sidebar.selectbox(
-        "Filter by borough", borough_options, index=0
-    )
-    borough_filter = BOROUGHS if borough_selection == "All boroughs" else [borough_selection]
+    pollutant_label, pollutant_code, _ = sidebar_pollutant_selector()
+    borough_filter = sidebar_borough_filter()
 
     # ─────────────────────────── FILTER DATA ───────────────────────
     filtered = df[
@@ -87,6 +88,15 @@ def render_missing_data(measurements_df: pd.DataFrame):
 
     sorted_stations = sorted(filtered["station_name"].unique())
 
+    # Shared chart properties
+    chart_height  = max(300, len(sorted_stations) * 25)
+    station_y_enc = alt.Y(
+        "station_name:N",
+        sort=sorted_stations,
+        title="Station",
+        axis=alt.Axis(labelLimit=0),
+    )
+
     # ─────────────────────────── HEATMAP GRID ──────────────────────
     st.divider()
     st.subheader("🟥 Missing Data Heatmap — Station vs Hour")
@@ -95,26 +105,11 @@ def render_missing_data(measurements_df: pd.DataFrame):
         "Dark red indicates most or all readings are missing — white or light cells mean data is mostly present."
     )
 
-    heatmap_df = (
-        filtered.groupby(["station_name", "hour"])["is_missing"]
-        .mean()
-        .reset_index()
-    )
-    heatmap_df.columns        = ["station_name", "hour", "missing_rate"]
-    heatmap_df["missing_pct"] = (heatmap_df["missing_rate"] * 100).round(1)
+    heatmap_df = missing_pct_df(filtered, ["station_name", "hour"])
 
     heatmap = alt.Chart(heatmap_df).mark_rect().encode(
-        x=alt.X(
-            "hour:O",
-            title="Hour of Day",
-            axis=alt.Axis(labelAngle=0),
-        ),
-        y=alt.Y(
-            "station_name:N",
-            sort=sorted_stations,
-            title="Station",
-            axis=alt.Axis(labelLimit=0),
-        ),
+        x=alt.X("hour:O", title="Hour of Day", axis=alt.Axis(labelAngle=0)),
+        y=station_y_enc,
         color=alt.Color(
             "missing_pct:Q",
             title="% Missing",
@@ -125,9 +120,7 @@ def render_missing_data(measurements_df: pd.DataFrame):
             alt.Tooltip("hour:O",         title="Hour"),
             alt.Tooltip("missing_pct:Q",  title="% Missing", format=".1f"),
         ],
-    ).properties(
-        height=max(300, len(sorted_stations) * 25),
-    )
+    ).properties(height=chart_height)
 
     st.altair_chart(heatmap.interactive(), use_container_width=True)
 
@@ -157,46 +150,27 @@ def render_missing_data(measurements_df: pd.DataFrame):
         "Colour indicates the borough each station belongs to."
     )
 
-    bar_df = (
-        filtered.groupby(["borough", "station_name"])["is_missing"]
-        .mean()
-        .reset_index()
-    )
-    bar_df.columns        = ["borough", "station_name", "missing_rate"]
-    bar_df["missing_pct"] = (bar_df["missing_rate"] * 100).round(1)
+    bar_df = missing_pct_df(filtered, ["borough", "station_name"])
     bar_df["present_pct"] = 100 - bar_df["missing_pct"]
 
-    colour_scale = alt.Scale(
-        domain=list(BOROUGH_COLOURS.keys()),
-        range=list(BOROUGH_COLOURS.values()),
-    )
+    colour_scale = alt.Scale(domain=list(BOROUGH_COLOURS.keys()), range=list(BOROUGH_COLOURS.values()))
 
     bar = alt.Chart(bar_df).mark_bar().encode(
-        x=alt.X(
-            "missing_pct:Q",
-            title="% Missing",
-            scale=alt.Scale(domain=[0, 100]),
-        ),
+        x=alt.X("missing_pct:Q", title="% Missing", scale=alt.Scale(domain=[0, 100])),
         y=alt.Y(
             "station_name:N",
             sort=alt.EncodingSortField(field="missing_pct", order="descending"),
             title="Station",
             axis=alt.Axis(labelLimit=0),
         ),
-        color=alt.Color(
-            "borough:N",
-            scale=colour_scale,
-            legend=alt.Legend(title="Borough"),
-        ),
+        color=alt.Color("borough:N", scale=colour_scale, legend=alt.Legend(title="Borough")),
         tooltip=[
             alt.Tooltip("station_name:N", title="Station"),
             alt.Tooltip("borough:N",      title="Borough"),
-            alt.Tooltip("missing_pct:Q",  title="% Missing",  format=".1f"),
-            alt.Tooltip("present_pct:Q",  title="% Present",  format=".1f"),
+            alt.Tooltip("missing_pct:Q",  title="% Missing", format=".1f"),
+            alt.Tooltip("present_pct:Q",  title="% Present", format=".1f"),
         ],
-    ).properties(
-        height=max(300, len(sorted_stations) * 25),
-    )
+    ).properties(height=chart_height)
 
     st.altair_chart(bar.interactive(), use_container_width=True)
 
@@ -223,27 +197,12 @@ def render_missing_data(measurements_df: pd.DataFrame):
         "Use this to distinguish between random sensor faults, prolonged outages, and network-wide issues."
     )
 
-    timeline_df = (
-        filtered.groupby(["station_name", "date"])["is_missing"]
-        .mean()
-        .reset_index()
-    )
-    timeline_df.columns        = ["station_name", "date", "missing_rate"]
-    timeline_df["missing_pct"] = (timeline_df["missing_rate"] * 100).round(1)
-    timeline_df["date_str"]    = timeline_df["date"].astype(str)
+    timeline_df = missing_pct_df(filtered, ["station_name", "date"])
+    timeline_df["date_str"] = timeline_df["date"].astype(str)
 
     timeline = alt.Chart(timeline_df).mark_rect().encode(
-        x=alt.X(
-            "date_str:O",
-            title="Date",
-            axis=alt.Axis(labelAngle=-30),
-        ),
-        y=alt.Y(
-            "station_name:N",
-            sort=sorted_stations,
-            title="Station",
-            axis=alt.Axis(labelLimit=0),
-        ),
+        x=alt.X("date_str:O", title="Date", axis=alt.Axis(labelAngle=-30)),
+        y=station_y_enc,
         color=alt.Color(
             "missing_pct:Q",
             title="% Missing",
@@ -254,9 +213,7 @@ def render_missing_data(measurements_df: pd.DataFrame):
             alt.Tooltip("date_str:O",     title="Date"),
             alt.Tooltip("missing_pct:Q",  title="% Missing", format=".1f"),
         ],
-    ).properties(
-        height=max(300, len(sorted_stations) * 25),
-    )
+    ).properties(height=chart_height)
 
     st.altair_chart(timeline.interactive(), use_container_width=True)
 
@@ -288,10 +245,7 @@ def render_missing_data(measurements_df: pd.DataFrame):
 
     summary = (
         filtered.groupby(["borough", "station_name"])
-        .agg(
-            Total=("value", "count"),
-            Missing=("is_missing", "sum"),
-        )
+        .agg(Total=("value", "count"), Missing=("is_missing", "sum"))
         .reset_index()
     )
     summary["Present"]   = summary["Total"] - summary["Missing"]
@@ -306,10 +260,7 @@ def render_missing_data(measurements_df: pd.DataFrame):
         "Missing", "Present", "% Missing", "% Present", "Status",
     ]
 
-    st.dataframe(
-        summary.drop(columns=["Borough"]),
-        use_container_width=True,
-    )
+    st.dataframe(summary.drop(columns=["Borough"]), use_container_width=True)
 
     with st.expander("ℹ️ About this table", expanded=False):
         st.markdown("""

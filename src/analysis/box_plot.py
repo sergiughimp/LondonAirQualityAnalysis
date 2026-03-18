@@ -2,6 +2,7 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
+from src.analysis.common import prepare_measurements, sidebar_borough_filter
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_box_plot(measurements_df: pd.DataFrame):
@@ -13,39 +14,26 @@ def render_box_plot(measurements_df: pd.DataFrame):
     )
 
     # ─────────────────────────── PREPARE BASE DATA ─────────────────
-    df = measurements_df.copy()
-    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = prepare_measurements(measurements_df)
 
-    # find top 3 pollutants by number of valid readings
     top_pollutants = (
-        df[df["value"].notna() & (df["value"] > 0)]
-        .groupby("pollutant_code")["value"]
+        df.groupby("pollutant_code")["value"]
         .count()
         .sort_values(ascending=False)
         .head(3)
         .index.tolist()
     )
-
-    # filter POLLUTANTS dict to only top 3
+    # Note: sidebar_pollutant_selector() not used here — pollutant list is
+    # restricted to top 3 by data coverage, not the full POLLUTANTS dict
     available_pollutants = {k: v for k, v in POLLUTANTS.items() if v in top_pollutants}
 
     # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("📦 Box Plot Settings")
 
-    pollutant_label = st.sidebar.selectbox(
-        "Pollutant", list(available_pollutants.keys()), index=0
-    )
-    pollutant_code = available_pollutants[pollutant_label]
-    threshold = WHO_THRESHOLDS.get(pollutant_code)
-
-    borough_options = ["All boroughs"] + BOROUGHS
-    borough_selection = st.sidebar.selectbox(
-        "Filter by borough",
-        borough_options,
-        index=0,
-    )
-    borough_filter = BOROUGHS if borough_selection == "All boroughs" else [borough_selection]
+    pollutant_label = st.sidebar.selectbox("Pollutant", list(available_pollutants.keys()), index=0)
+    pollutant_code  = available_pollutants[pollutant_label]
+    threshold       = WHO_THRESHOLDS.get(pollutant_code)
+    borough_filter  = sidebar_borough_filter()
 
     # ─────────────────────────── FILTER DATA ───────────────────────
     filtered = df[
@@ -69,7 +57,7 @@ def render_box_plot(measurements_df: pd.DataFrame):
     )
     stats_chart.columns = [
         "borough", "station_name", "count",
-        "mean", "std", "min", "q1", "median", "q3", "max"
+        "mean", "std", "min", "q1", "median", "q3", "max",
     ]
 
     # ─────────────────────────── BUILD CHART ───────────────────────
@@ -78,38 +66,28 @@ def render_box_plot(measurements_df: pd.DataFrame):
         range=list(BOROUGH_COLOURS.values()),
     )
 
-    # whisker — min to max
-    whisker = alt.Chart(stats_chart).mark_rule(
-        strokeWidth=1.5,
-    ).encode(
-        x=alt.X(
-            "station_name:N",
-            sort=sorted_stations,
-            title=None,
-            axis=alt.Axis(labelAngle=-45, labelLimit=0, labelOverlap=False),
-        ),
+    x_enc      = alt.X(
+        "station_name:N",
+        sort=sorted_stations,
+        title="Station",
+        axis=alt.Axis(labelAngle=-45, labelLimit=0, labelOverlap=False),
+    )
+    colour_enc = alt.Color("borough:N", scale=colour_scale, legend=alt.Legend(title="Borough"))
+
+    base = alt.Chart(stats_chart)
+
+    whisker = base.mark_rule(strokeWidth=1.5).encode(
+        x=x_enc,
         y=alt.Y("min:Q", title=f"{pollutant_code} concentration (µg/m³)"),
         y2=alt.Y2("max:Q"),
         color=alt.Color("borough:N", scale=colour_scale, legend=None),
     )
 
-    # IQR box
-    box = alt.Chart(stats_chart).mark_bar(
-        size=20,
-    ).encode(
-        x=alt.X(
-            "station_name:N",
-            sort=sorted_stations,
-            title="Station",
-            axis=alt.Axis(labelAngle=-45, labelLimit=0, labelOverlap=False),
-        ),
+    box = base.mark_bar(size=20).encode(
+        x=x_enc,
         y=alt.Y("q1:Q"),
         y2=alt.Y2("q3:Q"),
-        color=alt.Color(
-            "borough:N",
-            scale=colour_scale,
-            legend=alt.Legend(title="Borough"),
-        ),
+        color=colour_enc,
         tooltip=[
             alt.Tooltip("station_name:N", title="Station"),
             alt.Tooltip("borough:N",      title="Borough"),
@@ -122,57 +100,32 @@ def render_box_plot(measurements_df: pd.DataFrame):
         ],
     )
 
-    # median tick
-    median_line = alt.Chart(stats_chart).mark_tick(
-        color="white",
-        thickness=2,
-        size=20,
-    ).encode(
+    median_line = base.mark_tick(color="white", thickness=2, size=20).encode(
         x=alt.X("station_name:N", sort=sorted_stations),
         y=alt.Y("median:Q"),
     )
 
-    # WHO threshold line
+    layers = [whisker, box, median_line]
+
     if threshold:
-        who_line = alt.Chart(
-            pd.DataFrame({"threshold": [threshold]})
-        ).mark_rule(
-            color="red",
-            strokeDash=[6, 3],
-            strokeWidth=1.5,
-        ).encode(
-            y=alt.Y("threshold:Q"),
-        )
+        who_df = pd.DataFrame({"threshold": [threshold], "label": [f"WHO limit: {threshold} µg/m³"]})
+        layers += [
+            alt.Chart(who_df).mark_rule(
+                color="red", strokeDash=[6, 3], strokeWidth=1.5
+            ).encode(y=alt.Y("threshold:Q")),
 
-        who_label = alt.Chart(
-            pd.DataFrame({
-                "threshold": [threshold],
-                "label": [f"WHO limit: {threshold} µg/m³"],
-            })
-        ).mark_text(
-            align="left",
-            dx=5,
-            dy=-8,
-            color="red",
-            fontSize=11,
-        ).encode(
-            y=alt.Y("threshold:Q"),
-            text=alt.Text("label:N"),
-        )
+            alt.Chart(who_df).mark_text(
+                align="left", dx=5, dy=-8, color="red", fontSize=11
+            ).encode(y=alt.Y("threshold:Q"), text=alt.Text("label:N")),
+        ]
 
-        chart = (
-            whisker + box + median_line + who_line + who_label
-        ).properties(
-            height=450,
-            padding={"bottom": 120},
-        )
-    else:
-        chart = (whisker + box + median_line).properties(
-            height=450,
-            padding={"bottom": 120},
-        )
+    chart = (
+        alt.layer(*layers)
+        .properties(height=450, padding={"bottom": 120})
+        .interactive()
+    )
 
-    st.altair_chart(chart.interactive(), use_container_width=True)
+    st.altair_chart(chart, use_container_width=True)
 
     # ─────────────────────────── SUMMARY TABLE ─────────────────────
     st.divider()

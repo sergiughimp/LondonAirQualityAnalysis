@@ -2,7 +2,6 @@ import sys
 import subprocess
 import streamlit as st
 import pandas as pd
-from datetime import date
 from pathlib import Path
 
 # ─────────────────────────── PATH SETUP ────────────────────────────
@@ -17,13 +16,13 @@ st.set_page_config(
 
 # ─────────────────────────── FILE PATHS ────────────────────────────
 DATA_DIR          = BASE_DIR / "data"
-RAW_FILE          = DATA_DIR / "raw"       / "air_quality_3_days.json"
+RAW_FILE          = DATA_DIR / "raw"       / "air_quality.json"
 STATIONS_FILE     = DATA_DIR / "processed" / "stations.csv"
 MEASUREMENTS_FILE = DATA_DIR / "processed" / "measurements.csv"
 
-PROCESSING_DIR    = BASE_DIR / "src" / "processing"
-FETCH_SCRIPT      = PROCESSING_DIR / "fetch_air_quality_data.py"
-PROCESS_SCRIPT    = PROCESSING_DIR / "process_air_quality_data.py"
+PROCESSING_DIR = BASE_DIR / "src" / "processing"
+FETCH_SCRIPT   = PROCESSING_DIR / "fetch_air_quality_data.py"
+PROCESS_SCRIPT = PROCESSING_DIR / "process_air_quality_data.py"
 
 # ─────────────────────────── PIPELINE ──────────────────────────────
 def run_pipeline(start_date, end_date):
@@ -99,33 +98,35 @@ def render_sidebar():
 
 # ─────────────────────────── PAGE ROUTER ───────────────────────────
 def render_page(page: str):
+    measurements = load_measurements()
+
     if page == "🗺️ Geospatial Map":
         from src.visualization.geospatial_mapping import render_map
         render_map()
 
     elif page == "📈 Time Series":
         from src.analysis.time_series import render_time_series
-        render_time_series(load_measurements())
+        render_time_series(measurements)
 
     elif page == "🔥 Heatmap":
         from src.analysis.heatmap import render_heatmap
-        render_heatmap(load_measurements())
+        render_heatmap(measurements)
 
     elif page == "🗺️ Choropleth":
         from src.analysis.choropleth import render_choropleth
-        render_choropleth(load_measurements(), load_stations())
+        render_choropleth(measurements, load_stations())
 
     elif page == "📊 Correlation Analysis":
         from src.analysis.correlation import render_correlation
-        render_correlation(load_measurements())
+        render_correlation(measurements)
 
     elif page == "🏥 Health Impact":
         from src.analysis.health_impact import render_health_impact
-        render_health_impact(load_measurements())
+        render_health_impact(measurements)
 
     elif page == "📉 Missing Data":
         from src.analysis.missing_data import render_missing_data
-        render_missing_data(load_measurements())
+        render_missing_data(measurements)
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def main():

@@ -99,7 +99,7 @@ pip install -r requirements.txt
 
 Run the application with:
 ```bash
-streamlit run streamlit_app.py
+streamlit run app.py
 ```
 
 ## App Structure
@@ -116,7 +116,20 @@ streamlit run streamlit_app.py
 - `main()` — entry point, runs pipeline if data is missing then renders the app
 
 On first launch, if processed data is not found, the pipeline runs automatically.
-Use the **🔄 Refresh data** button in the sidebar to re-fetch and reprocess at any time.
+Use the **🔄 Fetch data** button in the sidebar to re-fetch and reprocess at any time.
+
+## Shared Utilities
+
+All analysis modules share a common set of helpers defined in `src/analysis/common.py`:
+
+| Function | Description |
+|---|---|
+| `prepare_measurements(df)` | Normalises columns, coerces types, filters `value > 0` |
+| `load_and_normalise_csv(filepath)` | Reads a CSV and normalises column names |
+| `sidebar_borough_filter()` | Renders borough selectbox, returns filtered borough list |
+| `sidebar_pollutant_selector()` | Renders pollutant selectbox, returns `(label, code, threshold)` |
+
+These helpers eliminate duplicated data prep and sidebar patterns across `time_series`, `heatmap`, `correlation`, `health_impact`, `box_plot`, `choropleth`, and `missing_data`.
 
 ## Testing
 
@@ -170,7 +183,7 @@ The script:
 
 The raw dataset is stored in:
 ```bash
-data/raw/air_quality_3_days.json
+data/raw/air_quality.json
 ```
 
 ## Data Processing
@@ -219,7 +232,7 @@ LondonAir API
       ↓
 fetch_air_quality_data.py
       ↓
-data/raw/air_quality_3_days.json
+data/raw/air_quality.json
       ↓
 process_air_quality_data.py
       ↓
@@ -241,7 +254,7 @@ london-air-quality-analysis/
 │
 ├── data/
 │   ├── raw/
-│   │   └── air_quality_3_days.json
+│   │   └── air_quality.json
 │   │
 │   ├── processed/
 │   │   ├── stations.csv
@@ -260,13 +273,14 @@ london-air-quality-analysis/
 │   │
 │   ├── analysis/
 │   │   ├── __init__.py
-|   │   ├── constants.py
+│   │   ├── constants.py
+│   │   ├── common.py
 │   │   ├── time_series.py
 │   │   ├── heatmap.py
 │   │   ├── choropleth.py
 │   │   ├── box_plot.py
-|   │   ├── correlation.py
-|   │   ├── health_impact.py
+│   │   ├── correlation.py
+│   │   ├── health_impact.py
 │   │   └── missing_data.py
 │   │
 │   └── visualization/

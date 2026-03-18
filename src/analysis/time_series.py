@@ -2,6 +2,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 from src.analysis.constants import POLLUTANTS, WHO_THRESHOLDS, BOROUGH_COLOURS, BOROUGHS
+from src.analysis.common import prepare_measurements, sidebar_borough_filter, sidebar_pollutant_selector
 
 # ─────────────────────────── MAIN ──────────────────────────────────
 def render_time_series(df: pd.DataFrame):
@@ -15,31 +16,19 @@ def render_time_series(df: pd.DataFrame):
         """
     )
 
-    # ─────────────────────────── DATA PREP ─────────────────────────
-    df = df.copy()
-    df.columns          = df.columns.str.strip().str.lower().str.replace(" ", "_")
-    df["measurement_date"] = pd.to_datetime(df["measurement_date"], errors="coerce")
-    df["value"]            = pd.to_numeric(df["value"], errors="coerce")
-
     # ─────────────────────────── SIDEBAR ───────────────────────────
     st.sidebar.header("📈 Time Series Settings")
-
-    selected_pollutant_label = st.sidebar.selectbox(
-        "Pollutant", list(POLLUTANTS.keys()), index=0
-    )
-    selected_pollutant_code = POLLUTANTS[selected_pollutant_label]
-    threshold               = WHO_THRESHOLDS.get(selected_pollutant_code)
-
-    boroughs         = ["All boroughs"] + sorted(df["borough"].dropna().unique().tolist())
-    selected_borough = st.sidebar.selectbox("Filter by borough", boroughs, index=0)
+    df = prepare_measurements(df)
+    selected_pollutant_label, selected_pollutant_code, threshold = sidebar_pollutant_selector()
+    borough_filter = sidebar_borough_filter()
 
     # ─────────────────────────── FILTER DATA ───────────────────────
-    filtered = df[df["pollutant_code"] == selected_pollutant_code].copy()
-    filtered = filtered.dropna(subset=["value"])
-    filtered = filtered[filtered["value"] > 0]
-
-    if selected_borough != "All boroughs":
-        filtered = filtered[filtered["borough"] == selected_borough]
+    filtered = df[
+        (df["pollutant_code"] == selected_pollutant_code) &
+        (df["value"].notna()) &
+        (df["value"] > 0) &
+        (df["borough"].isin(borough_filter))
+    ].copy()
 
     if filtered.empty:
         st.warning(
@@ -52,39 +41,25 @@ def render_time_series(df: pd.DataFrame):
     pollutant_short = selected_pollutant_label.split(" — ")[0]
 
     # ─────────────────────────── RUSH HOUR BANDS ───────────────────
-    dates      = filtered["measurement_date"].dt.normalize().unique()
-    rush_bands = []
-    for date in dates:
-        rush_bands.append({
-            "start": pd.Timestamp(date) + pd.Timedelta(hours=7),
-            "end":   pd.Timestamp(date) + pd.Timedelta(hours=9),
-            "label": "Morning rush",
-        })
-        rush_bands.append({
-            "start": pd.Timestamp(date) + pd.Timedelta(hours=17),
-            "end":   pd.Timestamp(date) + pd.Timedelta(hours=19),
-            "label": "Evening rush",
-        })
+    rush_bands = [
+        {"start": pd.Timestamp(date) + pd.Timedelta(hours=h_start),
+         "end":   pd.Timestamp(date) + pd.Timedelta(hours=h_end),
+         "label": label}
+        for date in filtered["measurement_date"].dt.normalize().unique()
+        for h_start, h_end, label in [(7, 9, "Morning rush"), (17, 19, "Evening rush")]
+    ]
     rush_df = pd.DataFrame(rush_bands)
 
     # ─────────────────────────── BUILD CHART ───────────────────────
-    bands = alt.Chart(rush_df).mark_rect(
-        opacity=0.12, color="#FFA500"
-    ).encode(
+    bands = alt.Chart(rush_df).mark_rect(opacity=0.12, color="#FFA500").encode(
         x=alt.X("start:T"),
         x2=alt.X2("end:T"),
         tooltip=[alt.Tooltip("label:N", title="Period")],
     )
 
     line = alt.Chart(filtered).mark_line(point=True).encode(
-        x=alt.X(
-            "measurement_date:T",
-            title="Date / Time",
-        ),
-        y=alt.Y(
-            "value:Q",
-            title=f"{pollutant_short} concentration (µg/m³)",
-        ),
+        x=alt.X("measurement_date:T", title="Date / Time"),
+        y=alt.Y("value:Q", title=f"{pollutant_short} concentration (µg/m³)"),
         color=alt.Color(
             "station_name:N",
             title="Station",
@@ -99,60 +74,53 @@ def render_time_series(df: pd.DataFrame):
         ],
     )
 
-    chart = bands + line
-
+    layers = [bands]
     if threshold:
         who_df = pd.DataFrame([{"threshold": threshold}])
+        layers += [
+            alt.Chart(who_df).mark_rule(
+                color="red", strokeDash=[6, 4], strokeWidth=1.5
+            ).encode(y=alt.Y("threshold:Q")),
 
-        who_line = alt.Chart(who_df).mark_rule(
-            color="red", strokeDash=[6, 4], strokeWidth=1.5
-        ).encode(
-            y=alt.Y("threshold:Q"),
+            alt.Chart(who_df).mark_text(
+                align="left", dx=4, dy=-6, color="red", fontSize=11
+            ).encode(
+                y=alt.Y("threshold:Q"),
+                text=alt.value(f"WHO guideline: {threshold} µg/m³"),
+            ),
+        ]
+    layers.append(line)
+
+    chart = (
+        alt.layer(*layers)
+        .properties(
+            width="container",
+            height=450,
+            title=f"Hourly {pollutant_short} Concentrations — Rush Hour Bands and WHO Threshold",
         )
-
-        who_label = alt.Chart(who_df).mark_text(
-            align="left", dx=4, dy=-6, color="red", fontSize=11
-        ).encode(
-            y=alt.Y("threshold:Q"),
-            text=alt.value(f"WHO guideline: {threshold} µg/m³"),
-        )
-
-        chart = bands + who_line + who_label + line
-
-    chart = chart.properties(
-        width="container",
-        height=450,
-        title=f"Hourly {pollutant_short} Concentrations — Rush Hour Bands and WHO Threshold",
-    ).interactive()
+        .interactive()
+    )
 
     st.altair_chart(chart, use_container_width=True)
 
     with st.expander("ℹ️ About this chart", expanded=False):
+        threshold_line = (
+            f"- The **red dashed line** marks the WHO annual mean guideline for "
+            f"{pollutant_short} at **{threshold} µg/m³** — any readings above this line "
+            f"indicate concentrations that exceed recommended safe limits\n"
+            if threshold else ""
+        )
         st.markdown(f"""
         **How to read this chart:**
         - Each **coloured line** represents a single monitoring station
         - **Orange shaded bands** mark morning (07:00–09:00) and evening (17:00–19:00)
         rush hours — periods of typically elevated road traffic emissions
-        - The **red dashed line** marks the WHO annual mean guideline for
-        {pollutant_short} at **{threshold} µg/m³** — any readings above this line
-        indicate concentrations that exceed recommended safe limits
-
+        {threshold_line}
         **Interpretation guidance:**
         - Stations that consistently peak during rush hour bands are likely
         capturing direct traffic emissions — typically roadside sites
         - Stations with elevated readings outside rush hours may reflect
         industrial sources, background pollution, or data anomalies
-        - Gaps in lines indicate missing or invalid readings — see the
-        **📉 Missing Data** page for a full data quality analysis
-        """ if threshold else """
-        **How to read this chart:**
-        - Each **coloured line** represents a single monitoring station
-        - **Orange shaded bands** mark morning (07:00–09:00) and evening (17:00–19:00)
-        rush hours — periods of typically elevated road traffic emissions
-
-        **Interpretation guidance:**
-        - Stations that consistently peak during rush hour bands are likely
-        capturing direct traffic emissions — typically roadside sites
         - Gaps in lines indicate missing or invalid readings — see the
         **📉 Missing Data** page for a full data quality analysis
         """)
@@ -170,12 +138,7 @@ def render_time_series(df: pd.DataFrame):
 
     summary = (
         filtered.groupby(["borough", "station_name"])["value"]
-        .agg(
-            Peak="max",
-            Average="mean",
-            Min="min",
-            Readings="count",
-        )
+        .agg(Peak="max", Average="mean", Min="min", Readings="count")
         .round(2)
         .reset_index()
         .rename(columns={
@@ -197,19 +160,18 @@ def render_time_series(df: pd.DataFrame):
     st.dataframe(summary, use_container_width=True)
 
     with st.expander("ℹ️ About this table", expanded=False):
+        above_who_line = (
+            f"- **Above WHO** — flags stations where the peak reading exceeded "
+            f"the WHO guideline of **{threshold} µg/m³** for {pollutant_short}\n\n"
+            "Stations marked **⚠️ Yes** recorded at least one hour where pollution "
+            "exceeded the recommended safe limit — indicating a potential health risk "
+            "for residents and commuters near that location."
+            if threshold else ""
+        )
         st.markdown(f"""
         - **Peak** — the single highest hourly reading recorded for this station
         - **Average** — mean concentration across all valid hourly readings
         - **Min** — the lowest valid hourly reading recorded
         - **Readings** — total number of valid hourly readings included in the summary
-        {f'- **Above WHO** — flags stations where the peak reading exceeded the WHO guideline of **{threshold} µg/m³** for {pollutant_short}' if threshold else ''}
-
-        Stations marked **⚠️ Yes** recorded at least one hour where pollution
-        exceeded the recommended safe limit — indicating a potential health risk
-        for residents and commuters near that location.
-        """ if threshold else """
-        - **Peak** — the single highest hourly reading recorded for this station
-        - **Average** — mean concentration across all valid hourly readings
-        - **Min** — the lowest valid hourly reading recorded
-        - **Readings** — total number of valid hourly readings included in the summary
+        {above_who_line}
         """)

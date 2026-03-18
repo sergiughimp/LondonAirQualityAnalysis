@@ -348,3 +348,24 @@ Contains:
   - `src/analysis/health_impact.py`
   - `src/analysis/missing_data.py`
 - Cleared `src/analysis/__init__.py` to avoid circular import issues
+
+### 29. Extract shared utilities into common.py
+ 
+- Created `src/analysis/common.py` with four shared helpers:
+  - `prepare_measurements(df)` — normalises columns, coerces types, filters `value > 0`
+  - `load_and_normalise_csv(filepath)` — reads a CSV and normalises column names
+  - `sidebar_borough_filter()` — renders borough selectbox, returns filtered borough list
+  - `sidebar_pollutant_selector()` — renders pollutant selectbox, returns `(label, code, threshold)`
+- Removed duplicated data prep blocks from `time_series`, `heatmap`, `correlation`, `health_impact`, and `box_plot`
+- Replaced repeated borough sidebar pattern across all analysis modules with `sidebar_borough_filter()`
+- Replaced repeated pollutant sidebar pattern with `sidebar_pollutant_selector()` in `time_series`, `heatmap`, `choropleth`, and `missing_data`
+- Removed duplicate `BOROUGH_COLOURS` and `WHO_THRESHOLDS` definitions from `geospatial_mapping.py`
+- Removed unused `from datetime import date` import from `app.py`
+- Deduplicated `load_measurements()` calls in `app.py` — computed once per page render
+- Fixed stale `selected_borough` reference in `time_series.py` — replaced with `borough_filter`
+- Added comments in `missing_data.py`, `choropleth.py`, and `box_plot.py` explaining why `prepare_measurements()` and `sidebar_pollutant_selector()` are intentionally not used in those files
+- Fixed `streamlit run streamlit_app.py` to `streamlit run app.py` in README
+- Fixed raw file path reference from `air_quality_3_days.json` to `air_quality.json` in README
+- Added Shared Utilities section to README documenting `common.py` helpers
+- Added `common.py` to project structure tree in README
+ 
